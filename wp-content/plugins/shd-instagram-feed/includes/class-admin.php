@@ -1,7 +1,7 @@
 <?php
 /**
- * Settings page: connect the Instagram account, sync on demand, settings,
- * status and admin notices.
+ * Settings page: log in with Instagram (or paste a token), Instagram app
+ * setup, sync on demand, settings, status and admin notices.
  *
  * @package SHD\InstagramFeed
  */
@@ -21,7 +21,11 @@ final class Admin {
 
 	const SETTINGS_GROUP = 'shd_igf';
 
-	const TOKEN_DOCS = 'https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/get-started';
+	const APP_GROUP = 'shd_igf_app';
+
+	const META_APPS = 'https://developers.facebook.com/apps/';
+
+	const LOGIN_DOCS = 'https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login';
 
 	/**
 	 * Register admin hooks.
@@ -29,6 +33,7 @@ final class Admin {
 	public static function init(): void {
 		add_action( 'admin_menu', array( self::class, 'add_page' ) );
 		add_action( 'admin_init', array( self::class, 'register_settings' ) );
+		add_action( 'admin_post_shd_igf_oauth_start', array( self::class, 'handle_oauth_start' ) );
 		add_action( 'admin_post_shd_igf_connect', array( self::class, 'handle_connect' ) );
 		add_action( 'admin_post_shd_igf_disconnect', array( self::class, 'handle_disconnect' ) );
 		add_action( 'admin_post_shd_igf_sync', array( self::class, 'handle_sync' ) );
@@ -51,7 +56,8 @@ final class Admin {
 		);
 
 		if ( $hook ) {
-			// Self-heal the cron event whenever someone opens the page.
+			// Self-heal options and the cron event whenever someone opens the page.
+			add_action( 'load-' . $hook, array( Options::class, 'install' ) );
 			add_action( 'load-' . $hook, array( Sync::class, 'schedule' ) );
 		}
 	}
@@ -65,13 +71,14 @@ final class Admin {
 	public static function action_links( array $links ): array {
 		array_unshift(
 			$links,
-			sprintf( '<a href="%s">%s</a>', esc_url( self::page_url() ), esc_html__( 'Settings', 'shd-instagram-feed' ) )
+			sprintf( '<a href="%s">%s</a>', esc_url( Connector::settings_url() ), esc_html__( 'Settings', 'shd-instagram-feed' ) )
 		);
 		return $links;
 	}
 
 	/**
-	 * Settings API registration for the feed settings.
+	 * Settings API registration: feed settings and Instagram app credentials
+	 * (separate groups, because they are saved by separate forms).
 	 */
 	public static function register_settings(): void {
 		register_setting(
@@ -81,6 +88,17 @@ final class Admin {
 				'type'              => 'array',
 				'sanitize_callback' => array( Options::class, 'sanitize_settings' ),
 				'default'           => Options::default_settings(),
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			self::APP_GROUP,
+			Options::APP,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( Options::class, 'sanitize_app' ),
+				'default'           => array(),
 				'show_in_rest'      => false,
 			)
 		);
@@ -139,6 +157,35 @@ final class Admin {
 	}
 
 	/**
+	 * "Log in with Instagram": send the browser to Instagram's login.
+	 */
+	public static function handle_oauth_start(): void {
+		self::verify_request( 'shd_igf_oauth_start' );
+
+		$reconnect = ! empty( $_POST['shd_igf_reconnect'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce and capability checked in verify_request().
+		$url       = Connector::authorize_url( get_current_user_id(), $reconnect );
+
+		if ( is_wp_error( $url ) ) {
+			self::redirect( 'error', $url->get_error_message() );
+		}
+
+		add_filter( 'allowed_redirect_hosts', array( self::class, 'allow_instagram_redirect' ) );
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Allow the redirect to Instagram's login page.
+	 *
+	 * @param array $hosts Allowed hosts.
+	 * @return array
+	 */
+	public static function allow_instagram_redirect( array $hosts ): array {
+		$hosts[] = 'www.instagram.com';
+		return $hosts;
+	}
+
+	/**
 	 * Save a pasted access token after checking it with Instagram, then run
 	 * the first sync so the widget has posts right away.
 	 */
@@ -151,47 +198,8 @@ final class Admin {
 			self::redirect( 'error', __( 'Please paste an access token.', 'shd-instagram-feed' ) );
 		}
 
-		$client  = new Api_Client( $token );
-		$profile = $client->get_profile();
-
-		if ( is_wp_error( $profile ) ) {
-			self::redirect(
-				'error',
-				sprintf(
-					/* translators: %s: error message from Instagram. */
-					__( 'Instagram did not accept this token: %s', 'shd-instagram-feed' ),
-					$profile->get_error_message()
-				)
-			);
-		}
-
-		$user_id = isset( $profile['user_id'] ) ? $profile['user_id'] : ( isset( $profile['id'] ) ? $profile['id'] : '' );
-
-		Options::save_connection(
-			array(
-				'token'        => $token,
-				'user_id'      => preg_replace( '/[^0-9A-Za-z_]/', '', (string) $user_id ),
-				'username'     => preg_replace( '/[^A-Za-z0-9._]/', '', isset( $profile['username'] ) ? (string) $profile['username'] : '' ),
-				'account_type' => sanitize_text_field( isset( $profile['account_type'] ) ? (string) $profile['account_type'] : '' ),
-				'connected_at' => time(),
-				'refreshed_at' => 0,
-				// Tokens generated in the App Dashboard last 60 days at most.
-				'expires_at'   => time() + 60 * DAY_IN_SECONDS,
-				'token_error'  => '',
-			)
-		);
-		Sync::schedule();
-
-		$connection = Options::get_connection();
-		$message    = sprintf(
-			/* translators: %s: Instagram username. */
-			__( 'Connected to @%s.', 'shd-instagram-feed' ),
-			$connection['username']
-		);
-
-		list( $type, $summary ) = self::sync_message( Sync::run() );
-
-		self::redirect( $type, $message . ' ' . $summary );
+		list( $type, $message ) = Connector::connect( $token );
+		self::redirect( $type, $message );
 	}
 
 	/**
@@ -217,7 +225,7 @@ final class Admin {
 	public static function handle_sync(): void {
 		self::verify_request( 'shd_igf_sync' );
 
-		list( $type, $message ) = self::sync_message( Sync::run() );
+		list( $type, $message ) = Connector::sync_message( Sync::run() );
 		self::redirect( $type, $message );
 	}
 
@@ -244,57 +252,6 @@ final class Admin {
 	}
 
 	/**
-	 * Human-readable result of a sync.
-	 *
-	 * @param array|\WP_Error $result Result of Sync::run().
-	 * @return array{0:string,1:string} Notice type and message.
-	 */
-	private static function sync_message( $result ): array {
-		if ( is_wp_error( $result ) ) {
-			return array(
-				'error',
-				sprintf(
-					/* translators: %s: error message. */
-					__( 'Sync failed: %s', 'shd-instagram-feed' ),
-					$result->get_error_message()
-				),
-			);
-		}
-
-		$parts = array(
-			sprintf(
-				/* translators: %d: number of posts. */
-				_n( '%d post is up to date.', '%d posts are up to date.', $result['fetched'], 'shd-instagram-feed' ),
-				$result['fetched']
-			),
-		);
-
-		if ( $result['imported'] ) {
-			$parts[] = sprintf(
-				/* translators: %d: number of images. */
-				_n( '%d new image imported.', '%d new images imported.', $result['imported'], 'shd-instagram-feed' ),
-				$result['imported']
-			);
-		}
-		if ( $result['pending'] ) {
-			$parts[] = sprintf(
-				/* translators: %d: number of images. */
-				_n( '%d more image will be imported in the background within a few minutes.', '%d more images will be imported in the background within a few minutes.', $result['pending'], 'shd-instagram-feed' ),
-				$result['pending']
-			);
-		}
-		if ( $result['failed'] ) {
-			$parts[] = sprintf(
-				/* translators: %d: number of images. */
-				_n( '%d image could not be imported and will be retried.', '%d images could not be imported and will be retried.', $result['failed'], 'shd-instagram-feed' ),
-				$result['failed']
-			);
-		}
-
-		return array( $result['failed'] ? 'warning' : 'success', implode( ' ', $parts ) );
-	}
-
-	/**
 	 * Nonce and capability check for admin-post actions.
 	 *
 	 * @param string $action Nonce action.
@@ -313,25 +270,9 @@ final class Admin {
 	 * @param string $message Message.
 	 */
 	private static function redirect( string $type, string $message ): void {
-		set_transient(
-			'shd_igf_notice_' . get_current_user_id(),
-			array(
-				'type'    => $type,
-				'message' => $message,
-			),
-			MINUTE_IN_SECONDS
-		);
-		wp_safe_redirect( self::page_url() );
+		Connector::notify( get_current_user_id(), $type, $message );
+		wp_safe_redirect( Connector::settings_url() );
 		exit;
-	}
-
-	/**
-	 * Settings page URL.
-	 *
-	 * @return string
-	 */
-	private static function page_url(): string {
-		return admin_url( 'options-general.php?page=' . self::PAGE );
 	}
 
 	/**
@@ -352,7 +293,7 @@ final class Admin {
 			'<div class="notice notice-warning"><p><strong>%1$s</strong> %2$s <a href="%3$s">%4$s</a></p></div>',
 			esc_html__( 'Instagram Feed:', 'shd-instagram-feed' ),
 			esc_html( $problem ),
-			esc_url( self::page_url() ),
+			esc_url( Connector::settings_url() ),
 			esc_html__( 'Open settings', 'shd-instagram-feed' )
 		);
 	}
@@ -371,7 +312,7 @@ final class Admin {
 		if ( '' !== $connection['token_error'] ) {
 			return sprintf(
 				/* translators: %s: error message from Instagram. */
-				__( 'Instagram no longer accepts the access token (%s). Generate a new token and connect again. Until then the site keeps showing the last synced posts.', 'shd-instagram-feed' ),
+				__( 'Instagram no longer accepts the access token (%s). Log in with Instagram again. Until then the site keeps showing the last synced posts.', 'shd-instagram-feed' ),
 				$connection['token_error']
 			);
 		}
@@ -379,7 +320,7 @@ final class Admin {
 		if ( $connection['expires_at'] && $connection['expires_at'] - time() < 7 * DAY_IN_SECONDS ) {
 			return sprintf(
 				/* translators: %s: date. */
-				__( 'The access token expires on %s and could not be renewed automatically. Generate a new token and connect again.', 'shd-instagram-feed' ),
+				__( 'The access token expires on %s and could not be renewed automatically. Log in with Instagram again.', 'shd-instagram-feed' ),
 				wp_date( get_option( 'date_format' ), $connection['expires_at'] )
 			);
 		}
@@ -405,13 +346,9 @@ final class Admin {
 			return;
 		}
 
-		$connection = Options::get_connection();
-		$status     = Options::get_status();
-		$feed       = Options::get_feed();
-		$connected  = '' !== $connection['token'];
-		$notice     = get_transient( 'shd_igf_notice_' . get_current_user_id() );
-		$problem    = self::connection_problem();
-		$next_run   = wp_next_scheduled( Sync::HOOK );
+		$notice  = get_transient( 'shd_igf_notice_' . get_current_user_id() );
+		$expired = isset( $_GET['shd_igf_login'] ) && 'expired' === sanitize_key( wp_unslash( $_GET['shd_igf_login'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects a message.
+		$problem = self::connection_problem();
 
 		if ( $notice ) {
 			delete_transient( 'shd_igf_notice_' . get_current_user_id() );
@@ -426,6 +363,12 @@ final class Admin {
 				</div>
 			<?php endif; ?>
 
+			<?php if ( $expired ) : ?>
+				<div class="notice notice-error is-dismissible">
+					<p><?php esc_html_e( 'The Instagram login link has expired or was already used. Please click “Log in with Instagram” again.', 'shd-instagram-feed' ); ?></p>
+				</div>
+			<?php endif; ?>
+
 			<?php if ( '' !== $problem ) : ?>
 				<div class="notice notice-warning"><p><?php echo esc_html( $problem ); ?></p></div>
 			<?php endif; ?>
@@ -437,129 +380,282 @@ final class Admin {
 				.shd-igf-admin dd { margin: 0; }
 				.shd-igf-admin__thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
 				.shd-igf-admin__thumbs img { display: block; width: 64px; height: 64px; object-fit: cover; border-radius: 2px; }
-				.shd-igf-admin__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+				.shd-igf-admin__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 1em 0; }
 				.shd-igf-admin__actions form { margin: 0; }
+				.shd-igf-admin details { margin: 1em 0; }
+				.shd-igf-admin summary { cursor: pointer; font-weight: 600; }
+				.shd-igf-admin__copy { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+				.shd-igf-admin__copy input { flex: 1; }
+				.shd-igf-admin ol li { margin-bottom: 8px; }
 			</style>
 
-			<div class="card">
-				<h2><?php esc_html_e( 'Instagram account', 'shd-instagram-feed' ); ?></h2>
+			<?php
+			self::render_account_card();
+			self::render_app_card();
+			self::render_feed_card();
+			self::render_settings_card();
+			?>
+		</div>
+		<script>
+			document.addEventListener( 'click', function ( event ) {
+				var button = event.target.closest && event.target.closest( '[data-shd-igf-copy]' );
+				var input = button && document.getElementById( button.getAttribute( 'data-shd-igf-copy' ) );
+				if ( ! input ) {
+					return;
+				}
+				var done = function () { button.textContent = button.getAttribute( 'data-copied' ); };
+				input.select();
+				if ( navigator.clipboard && window.isSecureContext ) {
+					navigator.clipboard.writeText( input.value ).then( done );
+				} else {
+					document.execCommand( 'copy' );
+					done();
+				}
+			} );
+		</script>
+		<?php
+	}
 
-				<?php if ( $connected ) : ?>
-					<dl>
-						<dt><?php esc_html_e( 'Account', 'shd-instagram-feed' ); ?></dt>
-						<dd>
-							<a href="<?php echo esc_url( 'https://www.instagram.com/' . rawurlencode( $connection['username'] ) . '/' ); ?>" target="_blank" rel="noopener">@<?php echo esc_html( $connection['username'] ); ?></a>
-							<?php if ( '' !== $connection['account_type'] ) : ?>
-								(<?php echo esc_html( ucwords( strtolower( str_replace( '_', ' ', $connection['account_type'] ) ) ) ); ?>)
-							<?php endif; ?>
-						</dd>
-						<dt><?php esc_html_e( 'Access token', 'shd-instagram-feed' ); ?></dt>
-						<dd>
-							<?php
-							if ( '' !== $connection['token_error'] ) {
-								esc_html_e( 'Not valid any more', 'shd-instagram-feed' );
-							} else {
-								printf(
-									/* translators: %s: date. */
-									esc_html__( 'Valid until %s, renewed automatically every week', 'shd-instagram-feed' ),
-									esc_html( wp_date( get_option( 'date_format' ), $connection['expires_at'] ) )
-								);
-							}
-							?>
-						</dd>
-					</dl>
-				<?php else : ?>
-					<p><?php esc_html_e( 'Connect an Instagram professional account (Business or Creator) by pasting an access token from the Meta App Dashboard. See the steps below.', 'shd-instagram-feed' ); ?></p>
+	/**
+	 * Card: connected account, "Log in with Instagram", token fallback.
+	 */
+	private static function render_account_card(): void {
+		$connection = Options::get_connection();
+		$connected  = '' !== $connection['token'];
+		$app_ready  = Options::app_is_configured();
+		$post_url   = admin_url( 'admin-post.php' );
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'Instagram account', 'shd-instagram-feed' ); ?></h2>
+
+			<?php if ( $connected ) : ?>
+				<dl>
+					<dt><?php esc_html_e( 'Account', 'shd-instagram-feed' ); ?></dt>
+					<dd>
+						<a href="<?php echo esc_url( 'https://www.instagram.com/' . rawurlencode( $connection['username'] ) . '/' ); ?>" target="_blank" rel="noopener">@<?php echo esc_html( $connection['username'] ); ?></a>
+						<?php if ( '' !== $connection['account_type'] ) : ?>
+							(<?php echo esc_html( ucwords( strtolower( str_replace( '_', ' ', $connection['account_type'] ) ) ) ); ?>)
+						<?php endif; ?>
+					</dd>
+					<dt><?php esc_html_e( 'Access token', 'shd-instagram-feed' ); ?></dt>
+					<dd>
+						<?php
+						if ( '' !== $connection['token_error'] ) {
+							esc_html_e( 'Not valid any more', 'shd-instagram-feed' );
+						} else {
+							printf(
+								/* translators: %s: date. */
+								esc_html__( 'Valid until %s, renewed automatically every week', 'shd-instagram-feed' ),
+								esc_html( wp_date( get_option( 'date_format' ), $connection['expires_at'] ) )
+							);
+						}
+						?>
+					</dd>
+				</dl>
+			<?php elseif ( $app_ready ) : ?>
+				<p><?php esc_html_e( 'Log in with the Instagram account whose posts should appear on the website. Instagram asks you to allow read access to the profile and posts. The plugin never posts anything.', 'shd-instagram-feed' ); ?></p>
+			<?php else : ?>
+				<p><?php esc_html_e( 'To connect with one click, set up the Instagram app below once. Or connect with an access token.', 'shd-instagram-feed' ); ?></p>
+			<?php endif; ?>
+
+			<div class="shd-igf-admin__actions">
+				<?php if ( $app_ready ) : ?>
+					<form method="post" action="<?php echo esc_url( $post_url ); ?>">
+						<input type="hidden" name="action" value="shd_igf_oauth_start">
+						<?php wp_nonce_field( 'shd_igf_oauth_start' ); ?>
+						<?php if ( $connected ) : ?>
+							<input type="hidden" name="shd_igf_reconnect" value="1">
+						<?php endif; ?>
+						<?php submit_button( $connected ? __( 'Reconnect with Instagram', 'shd-instagram-feed' ) : __( 'Log in with Instagram', 'shd-instagram-feed' ), $connected ? 'secondary' : 'primary large', 'submit', false ); ?>
+					</form>
 				<?php endif; ?>
 
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php if ( $connected ) : ?>
+					<form method="post" action="<?php echo esc_url( $post_url ); ?>" class="shd-igf-admin__actions">
+						<input type="hidden" name="action" value="shd_igf_disconnect">
+						<?php wp_nonce_field( 'shd_igf_disconnect' ); ?>
+						<?php submit_button( __( 'Disconnect', 'shd-instagram-feed' ), 'delete', 'submit', false ); ?>
+						<label><input type="checkbox" name="shd_igf_delete_cache" value="1"> <?php esc_html_e( 'Also delete the cached posts and images', 'shd-instagram-feed' ); ?></label>
+					</form>
+				<?php endif; ?>
+			</div>
+
+			<details<?php echo ( ! $app_ready && ! $connected ) ? ' open' : ''; ?>>
+				<summary><?php esc_html_e( 'Connect with an access token instead', 'shd-instagram-feed' ); ?></summary>
+				<ol>
+					<li><?php esc_html_e( 'Make sure the Instagram account is a professional account (Business or Creator). You can switch in the Instagram app under Settings → Account type and tools.', 'shd-instagram-feed' ); ?></li>
+					<li><?php esc_html_e( 'In the Meta App Dashboard, open your app → Instagram → “API setup with Instagram business login”, add the Instagram account and click “Generate token”.', 'shd-instagram-feed' ); ?></li>
+					<li><?php esc_html_e( 'Paste the token here. The plugin renews it automatically.', 'shd-instagram-feed' ); ?></li>
+				</ol>
+				<form method="post" action="<?php echo esc_url( $post_url ); ?>">
 					<input type="hidden" name="action" value="shd_igf_connect">
 					<?php wp_nonce_field( 'shd_igf_connect' ); ?>
 					<p>
-						<label for="shd-igf-token"><strong><?php echo $connected ? esc_html__( 'New access token', 'shd-instagram-feed' ) : esc_html__( 'Access token', 'shd-instagram-feed' ); ?></strong></label><br>
+						<label for="shd-igf-token"><strong><?php esc_html_e( 'Access token', 'shd-instagram-feed' ); ?></strong></label><br>
 						<input type="password" id="shd-igf-token" name="shd_igf_token" class="large-text code" autocomplete="off" spellcheck="false" required>
 					</p>
-					<?php submit_button( $connected ? __( 'Replace token', 'shd-instagram-feed' ) : __( 'Connect account', 'shd-instagram-feed' ), $connected ? 'secondary' : 'primary', 'submit', false ); ?>
+					<?php submit_button( $connected ? __( 'Replace token', 'shd-instagram-feed' ) : __( 'Connect with token', 'shd-instagram-feed' ), 'secondary', 'submit', false ); ?>
 				</form>
+			</details>
+		</div>
+		<?php
+	}
 
-				<?php if ( $connected ) : ?>
-					<hr>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="shd-igf-admin__actions">
-						<input type="hidden" name="action" value="shd_igf_disconnect">
-						<?php wp_nonce_field( 'shd_igf_disconnect' ); ?>
-						<label><input type="checkbox" name="shd_igf_delete_cache" value="1"> <?php esc_html_e( 'Also delete the cached posts and images', 'shd-instagram-feed' ); ?></label>
-						<?php submit_button( __( 'Disconnect', 'shd-instagram-feed' ), 'delete', 'submit', false ); ?>
-					</form>
-				<?php endif; ?>
+	/**
+	 * Card: Instagram app credentials and redirect URI for the login button.
+	 */
+	private static function render_app_card(): void {
+		$app      = Options::get_app();
+		$ready    = Options::app_is_configured();
+		$redirect = Connector::redirect_uri();
+		$secure   = 'https' === wp_parse_url( $redirect, PHP_URL_SCHEME );
+		$stored   = get_option( Options::APP, array() );
+		$saved    = is_array( $stored ) && ! empty( $stored['app_secret'] );
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'Instagram app', 'shd-instagram-feed' ); ?></h2>
+			<p><?php esc_html_e( 'The login button uses an app in the Meta App Dashboard. You set it up once; the same app can be used for several websites.', 'shd-instagram-feed' ); ?></p>
+
+			<p><strong><?php esc_html_e( 'OAuth redirect URI for this website', 'shd-instagram-feed' ); ?></strong></p>
+			<div class="shd-igf-admin__copy">
+				<input type="text" id="shd-igf-redirect" class="large-text code" value="<?php echo esc_attr( $redirect ); ?>" readonly>
+				<button type="button" class="button" data-shd-igf-copy="shd-igf-redirect" data-copied="<?php esc_attr_e( 'Copied', 'shd-instagram-feed' ); ?>"><?php esc_html_e( 'Copy', 'shd-instagram-feed' ); ?></button>
 			</div>
+			<?php if ( ! $secure ) : ?>
+				<div class="notice notice-warning inline"><p><?php esc_html_e( 'Instagram only redirects to secure (https) addresses. Switch the website to https before using the login button.', 'shd-instagram-feed' ); ?></p></div>
+			<?php endif; ?>
 
-			<div class="card">
-				<h2><?php esc_html_e( 'Feed', 'shd-instagram-feed' ); ?></h2>
-				<dl>
-					<dt><?php esc_html_e( 'Cached posts', 'shd-instagram-feed' ); ?></dt>
-					<dd><?php echo esc_html( number_format_i18n( count( $feed['items'] ) ) ); ?></dd>
-					<dt><?php esc_html_e( 'Last update', 'shd-instagram-feed' ); ?></dt>
-					<dd><?php echo esc_html( $status['last_success'] ? self::relative_time( $status['last_success'] ) : __( 'Never', 'shd-instagram-feed' ) ); ?></dd>
-					<dt><?php esc_html_e( 'Next check', 'shd-instagram-feed' ); ?></dt>
-					<dd><?php echo esc_html( $next_run ? self::relative_time( $next_run ) : __( 'Not scheduled', 'shd-instagram-feed' ) ); ?></dd>
-					<?php if ( $status['pending'] ) : ?>
-						<dt><?php esc_html_e( 'Waiting', 'shd-instagram-feed' ); ?></dt>
-						<dd>
-							<?php
-							/* translators: %d: number of images. */
-							echo esc_html( sprintf( _n( '%d image is being imported in the background', '%d images are being imported in the background', $status['pending'], 'shd-instagram-feed' ), $status['pending'] ) );
-							?>
-						</dd>
-					<?php endif; ?>
-					<?php if ( '' !== $status['last_error'] ) : ?>
-						<dt><?php esc_html_e( 'Last error', 'shd-instagram-feed' ); ?></dt>
-						<dd><?php echo esc_html( $status['last_error'] ); ?> (<?php echo esc_html( self::relative_time( $status['last_error_at'] ) ); ?>)</dd>
-					<?php endif; ?>
-				</dl>
-
-				<?php if ( $feed['items'] ) : ?>
-					<div class="shd-igf-admin__thumbs">
-						<?php foreach ( array_slice( $feed['items'], 0, 16 ) as $item ) : ?>
-							<a href="<?php echo esc_url( $item['permalink'] ); ?>" target="_blank" rel="noopener">
-								<?php echo wp_get_attachment_image( (int) $item['attachment_id'], 'thumbnail', false, array( 'loading' => 'lazy' ) ); ?>
-							</a>
-						<?php endforeach; ?>
-					</div>
-				<?php endif; ?>
-
-				<?php if ( $connected ) : ?>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="shd_igf_sync">
-						<?php wp_nonce_field( 'shd_igf_sync' ); ?>
-						<?php submit_button( __( 'Check for new posts now', 'shd-instagram-feed' ), 'secondary', 'submit', false ); ?>
-					</form>
-				<?php endif; ?>
-			</div>
-
-			<div class="card">
-				<h2><?php esc_html_e( 'Settings', 'shd-instagram-feed' ); ?></h2>
-				<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
-					<?php
-					settings_fields( self::SETTINGS_GROUP );
-					do_settings_sections( self::PAGE );
-					submit_button();
-					?>
-				</form>
-			</div>
-
-			<div class="card">
-				<h2><?php esc_html_e( 'How to get an access token', 'shd-instagram-feed' ); ?></h2>
+			<details<?php echo $ready ? '' : ' open'; ?>>
+				<summary><?php esc_html_e( 'Setup steps', 'shd-instagram-feed' ); ?></summary>
 				<ol>
-					<li><?php esc_html_e( 'Make sure the Instagram account is a professional account (Business or Creator). You can switch in the Instagram app under Settings → Account type and tools.', 'shd-instagram-feed' ); ?></li>
-					<li><?php esc_html_e( 'On developers.facebook.com, create an app of the type “Business” with the Instagram use case.', 'shd-instagram-feed' ); ?></li>
-					<li><?php esc_html_e( 'In the app dashboard, open Instagram → “API setup with Instagram business login”, add the Instagram account and click “Generate token”.', 'shd-instagram-feed' ); ?></li>
-					<li><?php esc_html_e( 'Copy the token, paste it above and click “Connect account”. The plugin renews the token automatically, so you only do this once.', 'shd-instagram-feed' ); ?></li>
+					<li>
+						<?php
+						printf(
+							/* translators: %s: link to the Meta App Dashboard. */
+							esc_html__( 'In the %s, create an app of the type “Business” with the Instagram use case, or open your existing app.', 'shd-instagram-feed' ),
+							'<a href="' . esc_url( self::META_APPS ) . '" target="_blank" rel="noopener">' . esc_html__( 'Meta App Dashboard', 'shd-instagram-feed' ) . '</a>'
+						);
+						?>
+					</li>
+					<li><?php esc_html_e( 'Open Instagram → “API setup with Instagram business login” → “Set up Instagram business login” → “Business login settings” and add the redirect URI above under “OAuth redirect URIs”.', 'shd-instagram-feed' ); ?></li>
+					<li><?php esc_html_e( 'Copy the “Instagram app ID” and “Instagram app secret” from the same page into the fields below and save.', 'shd-instagram-feed' ); ?></li>
+					<li><?php esc_html_e( 'Add the Instagram account to the app (“Generate access tokens” → “Add account”). Accounts that are not added can only log in once Meta has granted the app Advanced Access (App Review).', 'shd-instagram-feed' ); ?></li>
 				</ol>
-				<p>
-					<a href="<?php echo esc_url( self::TOKEN_DOCS ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Meta’s guide: Instagram API with Instagram Login', 'shd-instagram-feed' ); ?></a>
-				</p>
-				<p class="description"><?php esc_html_e( 'Then add the “Instagram Feed” widget to a page in Elementor.', 'shd-instagram-feed' ); ?></p>
-			</div>
+				<p><a href="<?php echo esc_url( self::LOGIN_DOCS ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Meta’s guide: Business Login for Instagram', 'shd-instagram-feed' ); ?></a></p>
+			</details>
+
+			<?php if ( $app['id_constant'] && $app['secret_constant'] ) : ?>
+				<p><?php esc_html_e( 'The app ID and secret are defined in wp-config.php.', 'shd-instagram-feed' ); ?></p>
+			<?php else : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+					<?php settings_fields( self::APP_GROUP ); ?>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label for="shd-igf-app-id"><?php esc_html_e( 'Instagram app ID', 'shd-instagram-feed' ); ?></label></th>
+							<td>
+								<?php if ( $app['id_constant'] ) : ?>
+									<?php esc_html_e( 'Defined in wp-config.php', 'shd-instagram-feed' ); ?>
+								<?php else : ?>
+									<input type="text" id="shd-igf-app-id" name="<?php echo esc_attr( Options::APP ); ?>[app_id]" value="<?php echo esc_attr( $app['app_id'] ); ?>" class="regular-text code" inputmode="numeric" autocomplete="off">
+								<?php endif; ?>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="shd-igf-app-secret"><?php esc_html_e( 'Instagram app secret', 'shd-instagram-feed' ); ?></label></th>
+							<td>
+								<?php if ( $app['secret_constant'] ) : ?>
+									<?php esc_html_e( 'Defined in wp-config.php', 'shd-instagram-feed' ); ?>
+								<?php else : ?>
+									<input type="password" id="shd-igf-app-secret" name="<?php echo esc_attr( Options::APP ); ?>[app_secret]" value="" class="regular-text code" autocomplete="new-password" spellcheck="false"<?php echo $saved ? ' placeholder="••••••••••••"' : ''; ?>>
+									<p class="description">
+										<?php
+										if ( $saved ) {
+											esc_html_e( 'Saved. Leave empty to keep it.', 'shd-instagram-feed' );
+											echo ' ';
+										}
+										esc_html_e( 'To keep the secret out of the database, define SHD_IGF_APP_ID and SHD_IGF_APP_SECRET in wp-config.php instead.', 'shd-instagram-feed' );
+										?>
+									</p>
+								<?php endif; ?>
+							</td>
+						</tr>
+					</table>
+					<?php submit_button( __( 'Save app settings', 'shd-instagram-feed' ), 'secondary', 'submit', false ); ?>
+				</form>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Card: feed status, preview, sync now.
+	 */
+	private static function render_feed_card(): void {
+		$connection = Options::get_connection();
+		$status     = Options::get_status();
+		$feed       = Options::get_feed();
+		$next_run   = wp_next_scheduled( Sync::HOOK );
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'Feed', 'shd-instagram-feed' ); ?></h2>
+			<dl>
+				<dt><?php esc_html_e( 'Cached posts', 'shd-instagram-feed' ); ?></dt>
+				<dd><?php echo esc_html( number_format_i18n( count( $feed['items'] ) ) ); ?></dd>
+				<dt><?php esc_html_e( 'Last update', 'shd-instagram-feed' ); ?></dt>
+				<dd><?php echo esc_html( $status['last_success'] ? self::relative_time( $status['last_success'] ) : __( 'Never', 'shd-instagram-feed' ) ); ?></dd>
+				<dt><?php esc_html_e( 'Next check', 'shd-instagram-feed' ); ?></dt>
+				<dd><?php echo esc_html( $next_run ? self::relative_time( $next_run ) : __( 'Not scheduled', 'shd-instagram-feed' ) ); ?></dd>
+				<?php if ( $status['pending'] ) : ?>
+					<dt><?php esc_html_e( 'Waiting', 'shd-instagram-feed' ); ?></dt>
+					<dd>
+						<?php
+						/* translators: %d: number of images. */
+						echo esc_html( sprintf( _n( '%d image is being imported in the background', '%d images are being imported in the background', $status['pending'], 'shd-instagram-feed' ), $status['pending'] ) );
+						?>
+					</dd>
+				<?php endif; ?>
+				<?php if ( '' !== $status['last_error'] ) : ?>
+					<dt><?php esc_html_e( 'Last error', 'shd-instagram-feed' ); ?></dt>
+					<dd><?php echo esc_html( $status['last_error'] ); ?> (<?php echo esc_html( self::relative_time( $status['last_error_at'] ) ); ?>)</dd>
+				<?php endif; ?>
+			</dl>
+
+			<?php if ( $feed['items'] ) : ?>
+				<div class="shd-igf-admin__thumbs">
+					<?php foreach ( array_slice( $feed['items'], 0, 16 ) as $item ) : ?>
+						<a href="<?php echo esc_url( $item['permalink'] ); ?>" target="_blank" rel="noopener">
+							<?php echo wp_get_attachment_image( (int) $item['attachment_id'], 'thumbnail', false, array( 'loading' => 'lazy' ) ); ?>
+						</a>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( '' !== $connection['token'] ) : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="shd_igf_sync">
+					<?php wp_nonce_field( 'shd_igf_sync' ); ?>
+					<?php submit_button( __( 'Check for new posts now', 'shd-instagram-feed' ), 'secondary', 'submit', false ); ?>
+				</form>
+			<?php endif; ?>
+			<p class="description"><?php esc_html_e( 'Then add the “Instagram Feed” widget to a page in Elementor.', 'shd-instagram-feed' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Card: feed settings.
+	 */
+	private static function render_settings_card(): void {
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'Settings', 'shd-instagram-feed' ); ?></h2>
+			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+				<?php
+				settings_fields( self::SETTINGS_GROUP );
+				do_settings_sections( self::PAGE );
+				submit_button();
+				?>
+			</form>
 		</div>
 		<?php
 	}

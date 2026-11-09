@@ -1,14 +1,14 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: SHD Instagram Feed 0.1.0\n"
+"Project-Id-Version: SHD Instagram Feed 0.2.0\n"
 "Report-Msgid-Bugs-To: https://shdigital.ch/\n"
 "Last-Translator: SH Digital\n"
 "Language-Team: SH Digital\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T09:31:04+00:00\n"
-"PO-Revision-Date: 2026-11-09 09:26+0000\n"
+"POT-Creation-Date: 2026-11-09T10:09:26+00:00\n"
+"PO-Revision-Date: 2026-11-09 10:07+0000\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: shd-instagram-feed\n"
@@ -34,74 +34,360 @@ msgstr "Zeigt Ihre neuesten Instagram-Beiträge in einem schnellen, barrierefrei
 msgid "SH Digital"
 msgstr "SH Digital"
 
-#: includes/class-admin.php:46
-#: includes/class-admin.php:47
-#: includes/class-admin.php:421
+#: includes/class-admin.php:51
+#: includes/class-admin.php:52
+#: includes/class-admin.php:358
 #: includes/elementor/class-widget.php:62
 msgid "Instagram Feed"
 msgstr "Instagram-Feed"
 
-#: includes/class-admin.php:68
-#: includes/class-admin.php:540
+#: includes/class-admin.php:74
+#: includes/class-admin.php:651
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: includes/class-admin.php:92
+#: includes/class-admin.php:110
 msgid "Posts to keep"
 msgstr "Gespeicherte Beiträge"
 
-#: includes/class-admin.php:101
+#: includes/class-admin.php:119
 msgid "Check for new posts"
 msgstr "Nach neuen Beiträgen suchen"
 
-#: includes/class-admin.php:119
+#: includes/class-admin.php:137
 msgid "The newest posts are kept with their images. Older images are deleted automatically."
 msgstr "Die neuesten Beiträge werden mit ihren Bildern gespeichert. Ältere Bilder werden automatisch gelöscht."
 
-#: includes/class-admin.php:129
+#: includes/class-admin.php:147
 msgid "Every hour"
 msgstr "Stündlich"
 
-#: includes/class-admin.php:130
+#: includes/class-admin.php:148
 msgid "Twice a day"
 msgstr "Zweimal täglich"
 
-#: includes/class-admin.php:131
+#: includes/class-admin.php:149
 msgid "Once a day"
 msgstr "Einmal täglich"
 
-#: includes/class-admin.php:151
+#: includes/class-admin.php:198
 msgid "Please paste an access token."
 msgstr "Bitte fügen Sie ein Zugriffstoken ein."
 
+#: includes/class-admin.php:216
+msgid "Disconnected. The cached posts and images were deleted."
+msgstr "Verbindung getrennt. Die gespeicherten Beiträge und Bilder wurden gelöscht."
+
+#: includes/class-admin.php:219
+msgid "Disconnected. The widget keeps showing the cached posts until you connect again."
+msgstr "Verbindung getrennt. Das Widget zeigt weiterhin die gespeicherten Beiträge, bis Sie das Konto wieder verbinden."
+
+#: includes/class-admin.php:261
+msgid "You are not allowed to manage the Instagram feed."
+msgstr "Sie dürfen den Instagram-Feed nicht verwalten."
+
+#: includes/class-admin.php:294
+msgid "Instagram Feed:"
+msgstr "Instagram-Feed:"
+
+#: includes/class-admin.php:297
+msgid "Open settings"
+msgstr "Einstellungen öffnen"
+
 #. translators: %s: error message from Instagram.
-#: includes/class-admin.php:162
+#: includes/class-admin.php:315
+#, php-format
+msgid "Instagram no longer accepts the access token (%s). Log in with Instagram again. Until then the site keeps showing the last synced posts."
+msgstr "Instagram akzeptiert das Zugriffstoken nicht mehr (%s). Melden Sie sich erneut mit Instagram an. Bis dahin zeigt die Website die zuletzt synchronisierten Beiträge."
+
+#. translators: %s: date.
+#: includes/class-admin.php:323
+#, php-format
+msgid "The access token expires on %s and could not be renewed automatically. Log in with Instagram again."
+msgstr "Das Zugriffstoken läuft am %s ab und konnte nicht automatisch erneuert werden. Melden Sie sich erneut mit Instagram an."
+
+#. translators: 1: date, 2: error message.
+#: includes/class-admin.php:332
+#, php-format
+msgid "The feed has not updated since %1$s. Last error: %2$s"
+msgstr "Der Feed wurde seit %1$s nicht mehr aktualisiert. Letzter Fehler: %2$s"
+
+#: includes/class-admin.php:368
+msgid "The Instagram login link has expired or was already used. Please click “Log in with Instagram” again."
+msgstr "Der Anmeldelink ist abgelaufen oder wurde bereits verwendet. Klicken Sie bitte erneut auf „Mit Instagram anmelden“."
+
+#: includes/class-admin.php:429
+msgid "Instagram account"
+msgstr "Instagram-Konto"
+
+#: includes/class-admin.php:433
+msgid "Account"
+msgstr "Konto"
+
+#: includes/class-admin.php:440
+#: includes/class-admin.php:494
+msgid "Access token"
+msgstr "Zugriffstoken"
+
+#: includes/class-admin.php:444
+msgid "Not valid any more"
+msgstr "Nicht mehr gültig"
+
+#. translators: %s: date.
+#: includes/class-admin.php:448
+#, php-format
+msgid "Valid until %s, renewed automatically every week"
+msgstr "Gültig bis %s, wird jede Woche automatisch erneuert"
+
+#: includes/class-admin.php:456
+msgid "Log in with the Instagram account whose posts should appear on the website. Instagram asks you to allow read access to the profile and posts. The plugin never posts anything."
+msgstr "Melden Sie sich mit dem Instagram-Konto an, dessen Beiträge auf der Website erscheinen sollen. Instagram fragt, ob Sie Lesezugriff auf Profil und Beiträge erlauben. Das Plugin veröffentlicht nie etwas."
+
+#: includes/class-admin.php:458
+msgid "To connect with one click, set up the Instagram app below once. Or connect with an access token."
+msgstr "Um das Konto mit einem Klick zu verbinden, richten Sie unten einmalig die Instagram-App ein. Oder verbinden Sie es mit einem Zugriffstoken."
+
+#: includes/class-admin.php:469
+msgid "Reconnect with Instagram"
+msgstr "Erneut mit Instagram anmelden"
+
+#: includes/class-admin.php:469
+msgid "Log in with Instagram"
+msgstr "Mit Instagram anmelden"
+
+#: includes/class-admin.php:477
+msgid "Disconnect"
+msgstr "Verbindung trennen"
+
+#: includes/class-admin.php:478
+msgid "Also delete the cached posts and images"
+msgstr "Auch die gespeicherten Beiträge und Bilder löschen"
+
+#: includes/class-admin.php:484
+msgid "Connect with an access token instead"
+msgstr "Stattdessen mit einem Zugriffstoken verbinden"
+
+#: includes/class-admin.php:486
+msgid "Make sure the Instagram account is a professional account (Business or Creator). You can switch in the Instagram app under Settings → Account type and tools."
+msgstr "Das Instagram-Konto muss ein professionelles Konto sein (Business oder Creator). Sie können es in der Instagram-App unter Einstellungen → Kontoart und Tools umstellen."
+
+#: includes/class-admin.php:487
+msgid "In the Meta App Dashboard, open your app → Instagram → “API setup with Instagram business login”, add the Instagram account and click “Generate token”."
+msgstr "Öffnen Sie im Meta App Dashboard Ihre App → Instagram → „API setup with Instagram business login“, fügen Sie das Instagram-Konto hinzu und klicken Sie auf „Generate token“."
+
+#: includes/class-admin.php:488
+msgid "Paste the token here. The plugin renews it automatically."
+msgstr "Fügen Sie das Token hier ein. Das Plugin erneuert es automatisch."
+
+#: includes/class-admin.php:497
+msgid "Replace token"
+msgstr "Token ersetzen"
+
+#: includes/class-admin.php:497
+msgid "Connect with token"
+msgstr "Mit Token verbinden"
+
+#: includes/class-admin.php:516
+msgid "Instagram app"
+msgstr "Instagram-App"
+
+#: includes/class-admin.php:517
+msgid "The login button uses an app in the Meta App Dashboard. You set it up once; the same app can be used for several websites."
+msgstr "Die Anmeldung nutzt eine App im Meta App Dashboard. Sie richten sie einmal ein; dieselbe App kann für mehrere Websites verwendet werden."
+
+#: includes/class-admin.php:519
+msgid "OAuth redirect URI for this website"
+msgstr "OAuth-Weiterleitungs-URI dieser Website"
+
+#: includes/class-admin.php:522
+msgid "Copied"
+msgstr "Kopiert"
+
+#: includes/class-admin.php:522
+msgid "Copy"
+msgstr "Kopieren"
+
+#: includes/class-admin.php:525
+msgid "Instagram only redirects to secure (https) addresses. Switch the website to https before using the login button."
+msgstr "Instagram leitet nur an sichere Adressen (https) weiter. Stellen Sie die Website auf https um, bevor Sie die Anmeldung nutzen."
+
+#: includes/class-admin.php:529
+msgid "Setup steps"
+msgstr "Schritte zur Einrichtung"
+
+#. translators: %s: link to the Meta App Dashboard.
+#: includes/class-admin.php:535
+#, php-format
+msgid "In the %s, create an app of the type “Business” with the Instagram use case, or open your existing app."
+msgstr "Erstellen Sie im %s eine App vom Typ „Business“ mit dem Anwendungsfall Instagram, oder öffnen Sie Ihre bestehende App."
+
+#: includes/class-admin.php:536
+msgid "Meta App Dashboard"
+msgstr "Meta App Dashboard"
+
+#: includes/class-admin.php:540
+msgid "Open Instagram → “API setup with Instagram business login” → “Set up Instagram business login” → “Business login settings” and add the redirect URI above under “OAuth redirect URIs”."
+msgstr "Öffnen Sie Instagram → „API setup with Instagram business login“ → „Set up Instagram business login“ → „Business login settings“ und tragen Sie die Weiterleitungs-URI von oben unter „OAuth redirect URIs“ ein."
+
+#: includes/class-admin.php:541
+msgid "Copy the “Instagram app ID” and “Instagram app secret” from the same page into the fields below and save."
+msgstr "Kopieren Sie „Instagram app ID“ und „Instagram app secret“ von derselben Seite in die Felder unten und speichern Sie."
+
+#: includes/class-admin.php:542
+msgid "Add the Instagram account to the app (“Generate access tokens” → “Add account”). Accounts that are not added can only log in once Meta has granted the app Advanced Access (App Review)."
+msgstr "Fügen Sie das Instagram-Konto der App hinzu („Generate access tokens“ → „Add account“). Nicht hinzugefügte Konten können sich erst anmelden, wenn Meta der App „Advanced Access“ gewährt hat (App Review)."
+
+#: includes/class-admin.php:544
+msgid "Meta’s guide: Business Login for Instagram"
+msgstr "Anleitung von Meta: Business Login for Instagram"
+
+#: includes/class-admin.php:548
+msgid "The app ID and secret are defined in wp-config.php."
+msgstr "App-ID und App-Secret sind in der wp-config.php definiert."
+
+#: includes/class-admin.php:554
+msgid "Instagram app ID"
+msgstr "Instagram-App-ID"
+
+#: includes/class-admin.php:557
+#: includes/class-admin.php:567
+msgid "Defined in wp-config.php"
+msgstr "In der wp-config.php definiert"
+
+#: includes/class-admin.php:564
+msgid "Instagram app secret"
+msgstr "Instagram-App-Secret"
+
+#: includes/class-admin.php:573
+msgid "Saved. Leave empty to keep it."
+msgstr "Gespeichert. Leer lassen, um es zu behalten."
+
+#: includes/class-admin.php:576
+msgid "To keep the secret out of the database, define SHD_IGF_APP_ID and SHD_IGF_APP_SECRET in wp-config.php instead."
+msgstr "Damit das Secret nicht in der Datenbank steht, können Sie stattdessen SHD_IGF_APP_ID und SHD_IGF_APP_SECRET in der wp-config.php definieren."
+
+#: includes/class-admin.php:583
+msgid "Save app settings"
+msgstr "App-Einstellungen speichern"
+
+#: includes/class-admin.php:600
+#: includes/elementor/class-widget.php:130
+msgid "Feed"
+msgstr "Feed"
+
+#: includes/class-admin.php:602
+msgid "Cached posts"
+msgstr "Gespeicherte Beiträge"
+
+#: includes/class-admin.php:604
+msgid "Last update"
+msgstr "Letzte Aktualisierung"
+
+#: includes/class-admin.php:605
+msgid "Never"
+msgstr "Nie"
+
+#: includes/class-admin.php:606
+msgid "Next check"
+msgstr "Nächste Prüfung"
+
+#: includes/class-admin.php:607
+msgid "Not scheduled"
+msgstr "Nicht geplant"
+
+#: includes/class-admin.php:609
+msgid "Waiting"
+msgstr "Ausstehend"
+
+#. translators: %d: number of images.
+#: includes/class-admin.php:613
+#, php-format
+msgid "%d image is being imported in the background"
+msgid_plural "%d images are being imported in the background"
+msgstr[0] "%d Bild wird im Hintergrund importiert"
+msgstr[1] "%d Bilder werden im Hintergrund importiert"
+
+#: includes/class-admin.php:618
+msgid "Last error"
+msgstr "Letzter Fehler"
+
+#: includes/class-admin.php:637
+msgid "Check for new posts now"
+msgstr "Jetzt nach neuen Beiträgen suchen"
+
+#: includes/class-admin.php:640
+msgid "Then add the “Instagram Feed” widget to a page in Elementor."
+msgstr "Fügen Sie danach in Elementor das Widget „Instagram-Feed“ zu einer Seite hinzu."
+
+#. translators: %s: time span, e.g. "5 mins".
+#: includes/class-admin.php:673
+#, php-format
+msgid "in %s"
+msgstr "in %s"
+
+#. translators: %s: time span, e.g. "5 mins".
+#: includes/class-admin.php:675
+#, php-format
+msgid "%s ago"
+msgstr "vor %s"
+
+#: includes/class-api-client.php:189
+#: includes/class-api-client.php:211
+msgid "Instagram did not return an access token."
+msgstr "Instagram hat kein Zugriffstoken zurückgegeben."
+
+#. translators: %s: technical error message.
+#: includes/class-api-client.php:292
+#, php-format
+msgid "Could not reach Instagram: %s"
+msgstr "Instagram ist nicht erreichbar: %s"
+
+#. translators: %d: HTTP status code.
+#: includes/class-api-client.php:306
+#, php-format
+msgid "Instagram sent an unexpected response (HTTP %d)."
+msgstr "Instagram hat eine unerwartete Antwort gesendet (HTTP %d)."
+
+#: includes/class-connector.php:77
+#: includes/class-connector.php:142
+msgid "Add the Instagram app ID and secret first (Instagram app section below)."
+msgstr "Erfassen Sie zuerst die Instagram-App-ID und das App-Secret (Abschnitt „Instagram-App“ unten)."
+
+#: includes/class-connector.php:118
+msgid "The Instagram login was cancelled. Nothing was changed."
+msgstr "Die Instagram-Anmeldung wurde abgebrochen. Es wurde nichts geändert."
+
+#. translators: %s: error message from Instagram.
+#: includes/class-connector.php:126
+#: includes/class-connector.php:154
+#, php-format
+msgid "Instagram login failed: %s"
+msgstr "Die Instagram-Anmeldung ist fehlgeschlagen: %s"
+
+#: includes/class-connector.php:137
+msgid "Instagram did not send an authorization code. Please try again."
+msgstr "Instagram hat keinen Autorisierungscode gesendet. Bitte versuchen Sie es erneut."
+
+#. translators: %s: error message from Instagram.
+#: includes/class-connector.php:214
 #, php-format
 msgid "Instagram did not accept this token: %s"
 msgstr "Instagram hat dieses Token nicht akzeptiert: %s"
 
 #. translators: %s: Instagram username.
-#: includes/class-admin.php:188
+#: includes/class-connector.php:240
 #, php-format
 msgid "Connected to @%s."
 msgstr "Verbunden mit @%s."
 
-#: includes/class-admin.php:208
-msgid "Disconnected. The cached posts and images were deleted."
-msgstr "Verbindung getrennt. Die gespeicherten Beiträge und Bilder wurden gelöscht."
-
-#: includes/class-admin.php:211
-msgid "Disconnected. The widget keeps showing the cached posts until you connect again."
-msgstr "Verbindung getrennt. Das Widget zeigt weiterhin die gespeicherten Beiträge, bis Sie das Konto wieder verbinden."
-
 #. translators: %s: error message.
-#: includes/class-admin.php:258
+#: includes/class-connector.php:261
 #, php-format
 msgid "Sync failed: %s"
 msgstr "Synchronisierung fehlgeschlagen: %s"
 
 #. translators: %d: number of posts.
-#: includes/class-admin.php:267
+#: includes/class-connector.php:270
 #, php-format
 msgid "%d post is up to date."
 msgid_plural "%d posts are up to date."
@@ -109,7 +395,7 @@ msgstr[0] "%d Beitrag ist aktuell."
 msgstr[1] "%d Beiträge sind aktuell."
 
 #. translators: %d: number of images.
-#: includes/class-admin.php:275
+#: includes/class-connector.php:278
 #, php-format
 msgid "%d new image imported."
 msgid_plural "%d new images imported."
@@ -117,7 +403,7 @@ msgstr[0] "%d neues Bild importiert."
 msgstr[1] "%d neue Bilder importiert."
 
 #. translators: %d: number of images.
-#: includes/class-admin.php:282
+#: includes/class-connector.php:285
 #, php-format
 msgid "%d more image will be imported in the background within a few minutes."
 msgid_plural "%d more images will be imported in the background within a few minutes."
@@ -125,186 +411,12 @@ msgstr[0] "%d weiteres Bild wird in den nächsten Minuten im Hintergrund importi
 msgstr[1] "%d weitere Bilder werden in den nächsten Minuten im Hintergrund importiert."
 
 #. translators: %d: number of images.
-#: includes/class-admin.php:289
+#: includes/class-connector.php:292
 #, php-format
 msgid "%d image could not be imported and will be retried."
 msgid_plural "%d images could not be imported and will be retried."
 msgstr[0] "%d Bild konnte nicht importiert werden und wird erneut versucht."
 msgstr[1] "%d Bilder konnten nicht importiert werden und werden erneut versucht."
-
-#: includes/class-admin.php:304
-msgid "You are not allowed to manage the Instagram feed."
-msgstr "Sie dürfen den Instagram-Feed nicht verwalten."
-
-#: includes/class-admin.php:353
-msgid "Instagram Feed:"
-msgstr "Instagram-Feed:"
-
-#: includes/class-admin.php:356
-msgid "Open settings"
-msgstr "Einstellungen öffnen"
-
-#. translators: %s: error message from Instagram.
-#: includes/class-admin.php:374
-#, php-format
-msgid "Instagram no longer accepts the access token (%s). Generate a new token and connect again. Until then the site keeps showing the last synced posts."
-msgstr "Instagram akzeptiert das Zugriffstoken nicht mehr (%s). Erstellen Sie ein neues Token und verbinden Sie das Konto erneut. Bis dahin zeigt die Website die zuletzt synchronisierten Beiträge."
-
-#. translators: %s: date.
-#: includes/class-admin.php:382
-#, php-format
-msgid "The access token expires on %s and could not be renewed automatically. Generate a new token and connect again."
-msgstr "Das Zugriffstoken läuft am %s ab und konnte nicht automatisch erneuert werden. Erstellen Sie ein neues Token und verbinden Sie das Konto erneut."
-
-#. translators: 1: date, 2: error message.
-#: includes/class-admin.php:391
-#, php-format
-msgid "The feed has not updated since %1$s. Last error: %2$s"
-msgstr "Der Feed wurde seit %1$s nicht mehr aktualisiert. Letzter Fehler: %2$s"
-
-#: includes/class-admin.php:445
-msgid "Instagram account"
-msgstr "Instagram-Konto"
-
-#: includes/class-admin.php:449
-msgid "Account"
-msgstr "Konto"
-
-#: includes/class-admin.php:456
-#: includes/class-admin.php:479
-msgid "Access token"
-msgstr "Zugriffstoken"
-
-#: includes/class-admin.php:460
-msgid "Not valid any more"
-msgstr "Nicht mehr gültig"
-
-#. translators: %s: date.
-#: includes/class-admin.php:464
-#, php-format
-msgid "Valid until %s, renewed automatically every week"
-msgstr "Gültig bis %s, wird jede Woche automatisch erneuert"
-
-#: includes/class-admin.php:472
-msgid "Connect an Instagram professional account (Business or Creator) by pasting an access token from the Meta App Dashboard. See the steps below."
-msgstr "Verbinden Sie ein professionelles Instagram-Konto (Business oder Creator), indem Sie ein Zugriffstoken aus dem Meta App Dashboard einfügen. Die Schritte finden Sie unten."
-
-#: includes/class-admin.php:479
-msgid "New access token"
-msgstr "Neues Zugriffstoken"
-
-#: includes/class-admin.php:482
-msgid "Replace token"
-msgstr "Token ersetzen"
-
-#: includes/class-admin.php:482
-msgid "Connect account"
-msgstr "Konto verbinden"
-
-#: includes/class-admin.php:490
-msgid "Also delete the cached posts and images"
-msgstr "Auch die gespeicherten Beiträge und Bilder löschen"
-
-#: includes/class-admin.php:491
-msgid "Disconnect"
-msgstr "Verbindung trennen"
-
-#: includes/class-admin.php:497
-#: includes/elementor/class-widget.php:130
-msgid "Feed"
-msgstr "Feed"
-
-#: includes/class-admin.php:499
-msgid "Cached posts"
-msgstr "Gespeicherte Beiträge"
-
-#: includes/class-admin.php:501
-msgid "Last update"
-msgstr "Letzte Aktualisierung"
-
-#: includes/class-admin.php:502
-msgid "Never"
-msgstr "Nie"
-
-#: includes/class-admin.php:503
-msgid "Next check"
-msgstr "Nächste Prüfung"
-
-#: includes/class-admin.php:504
-msgid "Not scheduled"
-msgstr "Nicht geplant"
-
-#: includes/class-admin.php:506
-msgid "Waiting"
-msgstr "Ausstehend"
-
-#. translators: %d: number of images.
-#: includes/class-admin.php:510
-#, php-format
-msgid "%d image is being imported in the background"
-msgid_plural "%d images are being imported in the background"
-msgstr[0] "%d Bild wird im Hintergrund importiert"
-msgstr[1] "%d Bilder werden im Hintergrund importiert"
-
-#: includes/class-admin.php:515
-msgid "Last error"
-msgstr "Letzter Fehler"
-
-#: includes/class-admin.php:534
-msgid "Check for new posts now"
-msgstr "Jetzt nach neuen Beiträgen suchen"
-
-#: includes/class-admin.php:551
-msgid "How to get an access token"
-msgstr "So erhalten Sie ein Zugriffstoken"
-
-#: includes/class-admin.php:553
-msgid "Make sure the Instagram account is a professional account (Business or Creator). You can switch in the Instagram app under Settings → Account type and tools."
-msgstr "Das Instagram-Konto muss ein professionelles Konto sein (Business oder Creator). Sie können es in der Instagram-App unter Einstellungen → Kontoart und Tools umstellen."
-
-#: includes/class-admin.php:554
-msgid "On developers.facebook.com, create an app of the type “Business” with the Instagram use case."
-msgstr "Erstellen Sie auf developers.facebook.com eine App vom Typ „Business“ mit dem Anwendungsfall Instagram."
-
-#: includes/class-admin.php:555
-msgid "In the app dashboard, open Instagram → “API setup with Instagram business login”, add the Instagram account and click “Generate token”."
-msgstr "Öffnen Sie im App-Dashboard Instagram → „API setup with Instagram business login“, fügen Sie das Instagram-Konto hinzu und klicken Sie auf „Generate token“."
-
-#: includes/class-admin.php:556
-msgid "Copy the token, paste it above and click “Connect account”. The plugin renews the token automatically, so you only do this once."
-msgstr "Kopieren Sie das Token, fügen Sie es oben ein und klicken Sie auf „Konto verbinden“. Das Plugin erneuert das Token automatisch, dieser Schritt ist also nur einmal nötig."
-
-#: includes/class-admin.php:559
-msgid "Meta’s guide: Instagram API with Instagram Login"
-msgstr "Anleitung von Meta: Instagram API with Instagram Login"
-
-#: includes/class-admin.php:561
-msgid "Then add the “Instagram Feed” widget to a page in Elementor."
-msgstr "Fügen Sie danach in Elementor das Widget „Instagram-Feed“ zu einer Seite hinzu."
-
-#. translators: %s: time span, e.g. "5 mins".
-#: includes/class-admin.php:577
-#, php-format
-msgid "in %s"
-msgstr "in %s"
-
-#. translators: %s: time span, e.g. "5 mins".
-#: includes/class-admin.php:579
-#, php-format
-msgid "%s ago"
-msgstr "vor %s"
-
-#. translators: %s: technical error message.
-#: includes/class-api-client.php:192
-#, php-format
-msgid "Could not reach Instagram: %s"
-msgstr "Instagram ist nicht erreichbar: %s"
-
-#. translators: %d: HTTP status code.
-#: includes/class-api-client.php:206
-#, php-format
-msgid "Instagram sent an unexpected response (HTTP %d)."
-msgstr "Instagram hat eine unerwartete Antwort gesendet (HTTP %d)."
 
 #: includes/class-importer.php:95
 msgid "The downloaded file is not a supported image."

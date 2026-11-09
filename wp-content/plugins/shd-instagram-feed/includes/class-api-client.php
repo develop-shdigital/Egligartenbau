@@ -131,6 +131,89 @@ final class Api_Client {
 	}
 
 	/**
+	 * Where "Log in with Instagram" sends the browser.
+	 *
+	 * @param string $app_id       Instagram app ID.
+	 * @param string $redirect_uri Registered OAuth redirect URI.
+	 * @param string $state        CSRF token, returned unchanged by Instagram.
+	 * @param bool   $force_reauth Ask for the Instagram login again (to switch accounts).
+	 * @return string
+	 */
+	public static function authorize_url( string $app_id, string $redirect_uri, string $state, bool $force_reauth = false ): string {
+		$params = array(
+			'client_id'     => $app_id,
+			'redirect_uri'  => $redirect_uri,
+			'response_type' => 'code',
+			'scope'         => 'instagram_business_basic',
+			'state'         => $state,
+		);
+		if ( $force_reauth ) {
+			$params['force_reauth'] = 'true';
+		}
+
+		return 'https://www.instagram.com/oauth/authorize?' . http_build_query( $params, '', '&', PHP_QUERY_RFC3986 );
+	}
+
+	/**
+	 * Exchange the authorization code (valid for one hour, single use) for a
+	 * short-lived token. Server-side only: needs the app secret.
+	 *
+	 * @param string $app_id       Instagram app ID.
+	 * @param string $app_secret   Instagram app secret.
+	 * @param string $redirect_uri The redirect URI used for the authorization.
+	 * @param string $code         Authorization code.
+	 * @return array|WP_Error `access_token`, `user_id`, `permissions`.
+	 */
+	public static function exchange_code( string $app_id, string $app_secret, string $redirect_uri, string $code ) {
+		$body = self::http(
+			'POST',
+			'https://api.instagram.com/oauth/access_token',
+			array(
+				'client_id'     => $app_id,
+				'client_secret' => $app_secret,
+				'grant_type'    => 'authorization_code',
+				'redirect_uri'  => $redirect_uri,
+				'code'          => $code,
+			),
+			array( $app_secret, $code )
+		);
+
+		if ( is_wp_error( $body ) ) {
+			return $body;
+		}
+
+		// Meta documents the token inside a "data" list; older responses were not wrapped.
+		$data = isset( $body['data'][0] ) && is_array( $body['data'][0] ) ? $body['data'][0] : $body;
+
+		if ( empty( $data['access_token'] ) ) {
+			return new WP_Error( 'shd_igf_no_token', __( 'Instagram did not return an access token.', 'shd-instagram-feed' ) );
+		}
+		return $data;
+	}
+
+	/**
+	 * Exchange a short-lived token (1 hour) for a long-lived one (60 days).
+	 *
+	 * @param string $app_secret  Instagram app secret.
+	 * @param string $short_token Short-lived token.
+	 * @return array|WP_Error `access_token`, `token_type`, `expires_in`.
+	 */
+	public static function exchange_long_lived( string $app_secret, string $short_token ) {
+		$params = array(
+			'grant_type'    => 'ig_exchange_token',
+			'client_secret' => $app_secret,
+			'access_token'  => $short_token,
+		);
+
+		$body = self::http( 'GET', add_query_arg( array_map( 'rawurlencode', $params ), self::HOST . '/access_token' ), array(), array( $app_secret, $short_token ) );
+
+		if ( ! is_wp_error( $body ) && empty( $body['access_token'] ) ) {
+			return new WP_Error( 'shd_igf_no_token', __( 'Instagram did not return an access token.', 'shd-instagram-feed' ) );
+		}
+		return $body;
+	}
+
+	/**
 	 * Whether the error means the token is invalid or expired.
 	 *
 	 * @param WP_Error $error Error from this client.
@@ -168,21 +251,38 @@ final class Api_Client {
 	}
 
 	/**
-	 * Send a GET request to the API and decode the response.
+	 * Send a GET request to the API with this client's token.
 	 *
 	 * @param string $url Full URL including the access token.
 	 * @return array|WP_Error
 	 */
 	private function request( string $url ) {
-		$response = wp_safe_remote_get(
-			$url,
-			array(
-				'timeout'     => 20,
-				'redirection' => 2,
-				'headers'     => array( 'Accept' => 'application/json' ),
-				'user-agent'  => 'SHD-Instagram-Feed/' . VERSION . '; ' . home_url( '/' ),
-			)
+		return self::http( 'GET', $url, array(), array( $this->token ) );
+	}
+
+	/**
+	 * Send a request and decode the JSON response.
+	 *
+	 * @param string   $method  `GET` or `POST`.
+	 * @param string   $url     Full URL.
+	 * @param array    $body    Form fields for POST requests.
+	 * @param string[] $secrets Values that must never appear in an error message.
+	 * @return array|WP_Error
+	 */
+	private static function http( string $method, string $url, array $body, array $secrets ) {
+		$args = array(
+			'timeout'     => 20,
+			'redirection' => 2,
+			'headers'     => array( 'Accept' => 'application/json' ),
+			'user-agent'  => 'SHD-Instagram-Feed/' . VERSION . '; ' . home_url( '/' ),
 		);
+
+		if ( 'POST' === $method ) {
+			$args['body'] = $body;
+			$response     = wp_safe_remote_post( $url, $args );
+		} else {
+			$response = wp_safe_remote_get( $url, $args );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error(
@@ -190,15 +290,15 @@ final class Api_Client {
 				sprintf(
 					/* translators: %s: technical error message. */
 					__( 'Could not reach Instagram: %s', 'shd-instagram-feed' ),
-					$this->redact( $response->get_error_message() )
+					self::redact( $response->get_error_message(), $secrets )
 				)
 			);
 		}
 
-		$status = (int) wp_remote_retrieve_response_code( $response );
-		$body   = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		$status  = (int) wp_remote_retrieve_response_code( $response );
+		$decoded = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 
-		if ( ! is_array( $body ) ) {
+		if ( ! is_array( $decoded ) ) {
 			return new WP_Error(
 				'shd_igf_bad_response',
 				sprintf(
@@ -210,22 +310,33 @@ final class Api_Client {
 			);
 		}
 
-		if ( isset( $body['error'] ) || $status >= 400 ) {
-			$error   = isset( $body['error'] ) && is_array( $body['error'] ) ? $body['error'] : array();
-			$message = isset( $error['message'] ) ? (string) $error['message'] : sprintf( 'HTTP %d', $status );
+		if ( isset( $decoded['error'] ) || isset( $decoded['error_message'] ) || $status >= 400 ) {
+			// The Graph API nests message and code in "error"; api.instagram.com uses "error_message" and "code".
+			$error = isset( $decoded['error'] ) && is_array( $decoded['error'] ) ? $decoded['error'] : array();
+			if ( isset( $error['message'] ) ) {
+				$message = (string) $error['message'];
+			} elseif ( isset( $decoded['error_message'] ) ) {
+				$message = (string) $decoded['error_message'];
+			} elseif ( isset( $decoded['error_description'] ) ) {
+				$message = (string) $decoded['error_description'];
+			} else {
+				$message = sprintf( 'HTTP %d', $status );
+			}
+
+			$code = isset( $error['code'] ) ? (int) $error['code'] : ( isset( $decoded['code'] ) ? (int) $decoded['code'] : 0 );
 
 			return new WP_Error(
 				'shd_igf_api',
-				sanitize_text_field( $this->redact( $message ) ),
+				sanitize_text_field( self::redact( $message, $secrets ) ),
 				array(
 					'status'      => $status,
-					'api_code'    => isset( $error['code'] ) ? (int) $error['code'] : 0,
+					'api_code'    => $code,
 					'api_subcode' => isset( $error['error_subcode'] ) ? (int) $error['error_subcode'] : 0,
 				)
 			);
 		}
 
-		return $body;
+		return $decoded;
 	}
 
 	/**
@@ -239,12 +350,18 @@ final class Api_Client {
 	}
 
 	/**
-	 * Never let the token end up in a stored error message.
+	 * Never let tokens, codes or the app secret end up in a stored message.
 	 *
-	 * @param string $message Message that might contain the request URL.
+	 * @param string   $message Message that might contain the request URL.
+	 * @param string[] $secrets Values to remove.
 	 * @return string
 	 */
-	private function redact( string $message ): string {
-		return '' === $this->token ? $message : str_replace( $this->token, '***', $message );
+	private static function redact( string $message, array $secrets ): string {
+		foreach ( $secrets as $secret ) {
+			if ( '' !== (string) $secret ) {
+				$message = str_replace( (string) $secret, '***', $message );
+			}
+		}
+		return $message;
 	}
 }

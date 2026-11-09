@@ -1,0 +1,370 @@
+/*
+ * SHD Instagram Feed – slider base styles.
+ *
+ * Printed inline once per page, right before the first slider, so the layout
+ * is final before any JavaScript runs (no layout shift). The track is a native
+ * scroll-snap container: swiping works even without JavaScript.
+ *
+ * Elementor controls only set the custom properties below.
+ */
+
+.shd-igf {
+	--shd-igf-per-view: 3;
+	--shd-igf-gap: 35px;
+	--shd-igf-ratio: 1 / 1;
+	--shd-igf-zoom: 1;
+	--shd-igf-arrow-size: 46px;
+	--shd-igf-arrow-icon: 24px;
+	--shd-igf-arrow-x: 21px;
+	--shd-igf-arrow-y: 50%;
+	--shd-igf-arrow-radius: 50%;
+	--shd-igf-arrow-color: #1c4c10;
+	--shd-igf-arrow-bg: #e3e2e0;
+	--shd-igf-arrow-color-hover: #fff;
+	--shd-igf-arrow-bg-hover: #1c4c10;
+	--shd-igf-dot: 8px;
+	--shd-igf-dot-color: #797761;
+	--shd-igf-dot-active: #1c4c10;
+	--shd-igf-progress-track: #e3e2e0;
+	--shd-igf-fraction-color: #4a4a49;
+	--shd-igf-controls-gap: 20px;
+	--shd-igf-controls-align: center;
+	--shd-igf-type-color: #fff;
+	--shd-igf-type-bg: rgba(0, 0, 0, 0.45);
+	--shd-igf-focus: #1c4c10;
+	position: relative;
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+
+@media (max-width: 1024px) {
+	.shd-igf {
+		--shd-igf-per-view: 2;
+	}
+}
+
+@media (max-width: 767px) {
+	.shd-igf {
+		--shd-igf-per-view: 1;
+		--shd-igf-arrow-size: 44px;
+		--shd-igf-arrow-icon: 22px;
+	}
+}
+
+.shd-igf .shd-igf__viewport {
+	position: relative;
+}
+
+.shd-igf--arrows-outside .shd-igf__viewport {
+	margin-inline: calc(var(--shd-igf-arrow-size) + var(--shd-igf-arrow-x));
+}
+
+.shd-igf .shd-igf__track {
+	display: flex;
+	gap: var(--shd-igf-gap);
+	margin: 0;
+	padding: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+}
+
+.shd-igf .shd-igf__track::-webkit-scrollbar {
+	display: none;
+}
+
+/* Programmatic scrolling animates scrollLeft; snapping would fight it. */
+.shd-igf .shd-igf__track.is-animating {
+	scroll-snap-type: none;
+}
+
+.shd-igf .shd-igf__slide {
+	position: relative;
+	flex: 0 0 calc((100% - (var(--shd-igf-per-view) - 1) * var(--shd-igf-gap)) / var(--shd-igf-per-view));
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	scroll-snap-align: start;
+}
+
+.shd-igf .shd-igf__link {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	color: inherit;
+	text-decoration: none;
+	outline: none;
+}
+
+.shd-igf .shd-igf__media {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	aspect-ratio: var(--shd-igf-ratio);
+	background: #f1f0ee;
+}
+
+.shd-igf .shd-igf__media img {
+	display: block;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	object-fit: cover;
+	transition: transform 0.4s ease;
+}
+
+.shd-igf .shd-igf__link:hover img,
+.shd-igf .shd-igf__link:focus-visible img {
+	transform: scale(var(--shd-igf-zoom));
+}
+
+/* Focus ring drawn inside the slide so the scroll container can't clip it. */
+.shd-igf .shd-igf__link:focus-visible::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border: 3px solid var(--shd-igf-focus);
+	border-radius: inherit;
+	box-shadow: inset 0 0 0 2px #fff;
+	pointer-events: none;
+}
+
+.shd-igf .shd-igf__type {
+	position: absolute;
+	top: 12px;
+	inset-inline-end: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: var(--shd-igf-type-bg);
+	color: var(--shd-igf-type-color);
+	pointer-events: none;
+}
+
+.shd-igf .shd-igf__type svg {
+	display: block;
+	width: 18px;
+	height: 18px;
+}
+
+/* Buttons: reset theme and Elementor kit styles, then style. */
+.shd-igf .shd-igf__arrow,
+.shd-igf .shd-igf__pause,
+.shd-igf .shd-igf__dot {
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	min-height: 24px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	box-shadow: none;
+	font: inherit;
+	line-height: 1;
+	letter-spacing: 0;
+	text-transform: none;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.shd-igf .shd-igf__arrow {
+	position: absolute;
+	top: var(--shd-igf-arrow-y);
+	z-index: 2;
+	width: var(--shd-igf-arrow-size);
+	height: var(--shd-igf-arrow-size);
+	border-radius: var(--shd-igf-arrow-radius);
+	background: var(--shd-igf-arrow-bg);
+	color: var(--shd-igf-arrow-color);
+	transform: translateY(-50%);
+	transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.shd-igf .shd-igf__arrow svg {
+	display: block;
+	width: var(--shd-igf-arrow-icon);
+	height: var(--shd-igf-arrow-icon);
+}
+
+.shd-igf .shd-igf__arrow--prev {
+	inset-inline-start: var(--shd-igf-arrow-x);
+}
+
+.shd-igf .shd-igf__arrow--next {
+	inset-inline-end: var(--shd-igf-arrow-x);
+}
+
+.shd-igf--arrows-outside .shd-igf__arrow--prev {
+	inset-inline-start: calc(-1 * (var(--shd-igf-arrow-size) + var(--shd-igf-arrow-x)));
+}
+
+.shd-igf--arrows-outside .shd-igf__arrow--next {
+	inset-inline-end: calc(-1 * (var(--shd-igf-arrow-size) + var(--shd-igf-arrow-x)));
+}
+
+[dir="rtl"] .shd-igf .shd-igf__arrow svg {
+	transform: scaleX(-1);
+}
+
+.shd-igf .shd-igf__arrow:hover,
+.shd-igf .shd-igf__arrow:focus-visible {
+	background: var(--shd-igf-arrow-bg-hover);
+	color: var(--shd-igf-arrow-color-hover);
+}
+
+.shd-igf .shd-igf__arrow[aria-disabled="true"] {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.shd-igf .shd-igf__arrow:focus-visible,
+.shd-igf .shd-igf__pause:focus-visible,
+.shd-igf .shd-igf__dot:focus-visible {
+	outline: 3px solid var(--shd-igf-focus);
+	outline-offset: 2px;
+}
+
+/* Controls row: reserved height, so dots appearing never shift the page. */
+.shd-igf .shd-igf__controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: var(--shd-igf-controls-align);
+	gap: 8px;
+	min-height: 32px;
+	margin-top: var(--shd-igf-controls-gap);
+}
+
+.shd-igf .shd-igf__pause {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--shd-igf-dot-active);
+	transition: background-color 0.2s ease;
+}
+
+.shd-igf .shd-igf__pause:hover {
+	background: var(--shd-igf-progress-track);
+}
+
+.shd-igf .shd-igf__pause svg {
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+
+.shd-igf .shd-igf__pause .shd-igf__icon-play,
+.shd-igf .shd-igf__pause.is-paused .shd-igf__icon-pause {
+	display: none;
+}
+
+.shd-igf .shd-igf__pause.is-paused .shd-igf__icon-play {
+	display: block;
+}
+
+.shd-igf .shd-igf__dots {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+}
+
+.shd-igf .shd-igf__dot {
+	width: 24px;
+	height: 24px;
+	background: transparent;
+}
+
+.shd-igf .shd-igf__dot::before {
+	content: "";
+	display: block;
+	width: var(--shd-igf-dot);
+	height: var(--shd-igf-dot);
+	border-radius: 999px;
+	background: var(--shd-igf-dot-color);
+	transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+.shd-igf .shd-igf__dot[aria-current="true"]::before {
+	width: calc(var(--shd-igf-dot) * 2.5);
+	background: var(--shd-igf-dot-active);
+}
+
+.shd-igf .shd-igf__fraction {
+	min-width: 4.5em;
+	color: var(--shd-igf-fraction-color);
+	font-size: 15px;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.2;
+	text-align: center;
+}
+
+.shd-igf .shd-igf__progress {
+	position: relative;
+	flex: 0 1 240px;
+	height: 3px;
+	overflow: hidden;
+	border-radius: 3px;
+	background: var(--shd-igf-progress-track);
+}
+
+.shd-igf .shd-igf__progress-bar {
+	position: absolute;
+	inset: 0;
+	background: var(--shd-igf-dot-active);
+	transform: scaleX(var(--shd-igf-progress, 0.25));
+	transform-origin: left center;
+	transition: transform 0.3s ease;
+}
+
+[dir="rtl"] .shd-igf .shd-igf__progress-bar {
+	transform-origin: right center;
+}
+
+/* Everything fits: nothing to slide, keep the reserved space. */
+.shd-igf.is-static .shd-igf__arrow {
+	display: none;
+}
+
+.shd-igf.is-static .shd-igf__controls {
+	visibility: hidden;
+}
+
+.shd-igf .shd-igf__sr {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.shd-igf .shd-igf__media img,
+	.shd-igf .shd-igf__arrow,
+	.shd-igf .shd-igf__dot::before,
+	.shd-igf .shd-igf__progress-bar {
+		transition: none;
+	}
+
+	.shd-igf .shd-igf__link:hover img,
+	.shd-igf .shd-igf__link:focus-visible img {
+		transform: none;
+	}
+}

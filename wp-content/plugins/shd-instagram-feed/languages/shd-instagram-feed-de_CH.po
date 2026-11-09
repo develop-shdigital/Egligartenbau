@@ -1,0 +1,686 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SHD Instagram Feed 0.1.0\n"
+"Report-Msgid-Bugs-To: https://shdigital.ch/\n"
+"Last-Translator: SH Digital\n"
+"Language-Team: SH Digital\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-09T09:31:04+00:00\n"
+"PO-Revision-Date: 2026-11-09 09:26+0000\n"
+"Language: de_CH\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: shd-instagram-feed\n"
+
+#. Plugin Name of the plugin
+#: shd-instagram-feed.php
+msgid "SHD Instagram Feed"
+msgstr "SHD Instagram Feed"
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: shd-instagram-feed.php
+msgid "https://shdigital.ch/"
+msgstr "https://shdigital.ch/"
+
+#. Description of the plugin
+#: shd-instagram-feed.php
+msgid "Shows your latest Instagram posts in a fast, accessible slider with an Elementor widget. Posts and images are synced in the background and stored locally, so visitors never load anything from Instagram."
+msgstr "Zeigt Ihre neuesten Instagram-Beiträge in einem schnellen, barrierefreien Slider mit Elementor-Widget. Beiträge und Bilder werden im Hintergrund synchronisiert und lokal gespeichert, Besucher laden also nichts von Instagram."
+
+#. Author of the plugin
+#: shd-instagram-feed.php
+msgid "SH Digital"
+msgstr "SH Digital"
+
+#: includes/class-admin.php:46
+#: includes/class-admin.php:47
+#: includes/class-admin.php:421
+#: includes/elementor/class-widget.php:62
+msgid "Instagram Feed"
+msgstr "Instagram-Feed"
+
+#: includes/class-admin.php:68
+#: includes/class-admin.php:540
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: includes/class-admin.php:92
+msgid "Posts to keep"
+msgstr "Gespeicherte Beiträge"
+
+#: includes/class-admin.php:101
+msgid "Check for new posts"
+msgstr "Nach neuen Beiträgen suchen"
+
+#: includes/class-admin.php:119
+msgid "The newest posts are kept with their images. Older images are deleted automatically."
+msgstr "Die neuesten Beiträge werden mit ihren Bildern gespeichert. Ältere Bilder werden automatisch gelöscht."
+
+#: includes/class-admin.php:129
+msgid "Every hour"
+msgstr "Stündlich"
+
+#: includes/class-admin.php:130
+msgid "Twice a day"
+msgstr "Zweimal täglich"
+
+#: includes/class-admin.php:131
+msgid "Once a day"
+msgstr "Einmal täglich"
+
+#: includes/class-admin.php:151
+msgid "Please paste an access token."
+msgstr "Bitte fügen Sie ein Zugriffstoken ein."
+
+#. translators: %s: error message from Instagram.
+#: includes/class-admin.php:162
+#, php-format
+msgid "Instagram did not accept this token: %s"
+msgstr "Instagram hat dieses Token nicht akzeptiert: %s"
+
+#. translators: %s: Instagram username.
+#: includes/class-admin.php:188
+#, php-format
+msgid "Connected to @%s."
+msgstr "Verbunden mit @%s."
+
+#: includes/class-admin.php:208
+msgid "Disconnected. The cached posts and images were deleted."
+msgstr "Verbindung getrennt. Die gespeicherten Beiträge und Bilder wurden gelöscht."
+
+#: includes/class-admin.php:211
+msgid "Disconnected. The widget keeps showing the cached posts until you connect again."
+msgstr "Verbindung getrennt. Das Widget zeigt weiterhin die gespeicherten Beiträge, bis Sie das Konto wieder verbinden."
+
+#. translators: %s: error message.
+#: includes/class-admin.php:258
+#, php-format
+msgid "Sync failed: %s"
+msgstr "Synchronisierung fehlgeschlagen: %s"
+
+#. translators: %d: number of posts.
+#: includes/class-admin.php:267
+#, php-format
+msgid "%d post is up to date."
+msgid_plural "%d posts are up to date."
+msgstr[0] "%d Beitrag ist aktuell."
+msgstr[1] "%d Beiträge sind aktuell."
+
+#. translators: %d: number of images.
+#: includes/class-admin.php:275
+#, php-format
+msgid "%d new image imported."
+msgid_plural "%d new images imported."
+msgstr[0] "%d neues Bild importiert."
+msgstr[1] "%d neue Bilder importiert."
+
+#. translators: %d: number of images.
+#: includes/class-admin.php:282
+#, php-format
+msgid "%d more image will be imported in the background within a few minutes."
+msgid_plural "%d more images will be imported in the background within a few minutes."
+msgstr[0] "%d weiteres Bild wird in den nächsten Minuten im Hintergrund importiert."
+msgstr[1] "%d weitere Bilder werden in den nächsten Minuten im Hintergrund importiert."
+
+#. translators: %d: number of images.
+#: includes/class-admin.php:289
+#, php-format
+msgid "%d image could not be imported and will be retried."
+msgid_plural "%d images could not be imported and will be retried."
+msgstr[0] "%d Bild konnte nicht importiert werden und wird erneut versucht."
+msgstr[1] "%d Bilder konnten nicht importiert werden und werden erneut versucht."
+
+#: includes/class-admin.php:304
+msgid "You are not allowed to manage the Instagram feed."
+msgstr "Sie dürfen den Instagram-Feed nicht verwalten."
+
+#: includes/class-admin.php:353
+msgid "Instagram Feed:"
+msgstr "Instagram-Feed:"
+
+#: includes/class-admin.php:356
+msgid "Open settings"
+msgstr "Einstellungen öffnen"
+
+#. translators: %s: error message from Instagram.
+#: includes/class-admin.php:374
+#, php-format
+msgid "Instagram no longer accepts the access token (%s). Generate a new token and connect again. Until then the site keeps showing the last synced posts."
+msgstr "Instagram akzeptiert das Zugriffstoken nicht mehr (%s). Erstellen Sie ein neues Token und verbinden Sie das Konto erneut. Bis dahin zeigt die Website die zuletzt synchronisierten Beiträge."
+
+#. translators: %s: date.
+#: includes/class-admin.php:382
+#, php-format
+msgid "The access token expires on %s and could not be renewed automatically. Generate a new token and connect again."
+msgstr "Das Zugriffstoken läuft am %s ab und konnte nicht automatisch erneuert werden. Erstellen Sie ein neues Token und verbinden Sie das Konto erneut."
+
+#. translators: 1: date, 2: error message.
+#: includes/class-admin.php:391
+#, php-format
+msgid "The feed has not updated since %1$s. Last error: %2$s"
+msgstr "Der Feed wurde seit %1$s nicht mehr aktualisiert. Letzter Fehler: %2$s"
+
+#: includes/class-admin.php:445
+msgid "Instagram account"
+msgstr "Instagram-Konto"
+
+#: includes/class-admin.php:449
+msgid "Account"
+msgstr "Konto"
+
+#: includes/class-admin.php:456
+#: includes/class-admin.php:479
+msgid "Access token"
+msgstr "Zugriffstoken"
+
+#: includes/class-admin.php:460
+msgid "Not valid any more"
+msgstr "Nicht mehr gültig"
+
+#. translators: %s: date.
+#: includes/class-admin.php:464
+#, php-format
+msgid "Valid until %s, renewed automatically every week"
+msgstr "Gültig bis %s, wird jede Woche automatisch erneuert"
+
+#: includes/class-admin.php:472
+msgid "Connect an Instagram professional account (Business or Creator) by pasting an access token from the Meta App Dashboard. See the steps below."
+msgstr "Verbinden Sie ein professionelles Instagram-Konto (Business oder Creator), indem Sie ein Zugriffstoken aus dem Meta App Dashboard einfügen. Die Schritte finden Sie unten."
+
+#: includes/class-admin.php:479
+msgid "New access token"
+msgstr "Neues Zugriffstoken"
+
+#: includes/class-admin.php:482
+msgid "Replace token"
+msgstr "Token ersetzen"
+
+#: includes/class-admin.php:482
+msgid "Connect account"
+msgstr "Konto verbinden"
+
+#: includes/class-admin.php:490
+msgid "Also delete the cached posts and images"
+msgstr "Auch die gespeicherten Beiträge und Bilder löschen"
+
+#: includes/class-admin.php:491
+msgid "Disconnect"
+msgstr "Verbindung trennen"
+
+#: includes/class-admin.php:497
+#: includes/elementor/class-widget.php:130
+msgid "Feed"
+msgstr "Feed"
+
+#: includes/class-admin.php:499
+msgid "Cached posts"
+msgstr "Gespeicherte Beiträge"
+
+#: includes/class-admin.php:501
+msgid "Last update"
+msgstr "Letzte Aktualisierung"
+
+#: includes/class-admin.php:502
+msgid "Never"
+msgstr "Nie"
+
+#: includes/class-admin.php:503
+msgid "Next check"
+msgstr "Nächste Prüfung"
+
+#: includes/class-admin.php:504
+msgid "Not scheduled"
+msgstr "Nicht geplant"
+
+#: includes/class-admin.php:506
+msgid "Waiting"
+msgstr "Ausstehend"
+
+#. translators: %d: number of images.
+#: includes/class-admin.php:510
+#, php-format
+msgid "%d image is being imported in the background"
+msgid_plural "%d images are being imported in the background"
+msgstr[0] "%d Bild wird im Hintergrund importiert"
+msgstr[1] "%d Bilder werden im Hintergrund importiert"
+
+#: includes/class-admin.php:515
+msgid "Last error"
+msgstr "Letzter Fehler"
+
+#: includes/class-admin.php:534
+msgid "Check for new posts now"
+msgstr "Jetzt nach neuen Beiträgen suchen"
+
+#: includes/class-admin.php:551
+msgid "How to get an access token"
+msgstr "So erhalten Sie ein Zugriffstoken"
+
+#: includes/class-admin.php:553
+msgid "Make sure the Instagram account is a professional account (Business or Creator). You can switch in the Instagram app under Settings → Account type and tools."
+msgstr "Das Instagram-Konto muss ein professionelles Konto sein (Business oder Creator). Sie können es in der Instagram-App unter Einstellungen → Kontoart und Tools umstellen."
+
+#: includes/class-admin.php:554
+msgid "On developers.facebook.com, create an app of the type “Business” with the Instagram use case."
+msgstr "Erstellen Sie auf developers.facebook.com eine App vom Typ «Business» mit dem Anwendungsfall Instagram."
+
+#: includes/class-admin.php:555
+msgid "In the app dashboard, open Instagram → “API setup with Instagram business login”, add the Instagram account and click “Generate token”."
+msgstr "Öffnen Sie im App-Dashboard Instagram → «API setup with Instagram business login», fügen Sie das Instagram-Konto hinzu und klicken Sie auf «Generate token»."
+
+#: includes/class-admin.php:556
+msgid "Copy the token, paste it above and click “Connect account”. The plugin renews the token automatically, so you only do this once."
+msgstr "Kopieren Sie das Token, fügen Sie es oben ein und klicken Sie auf «Konto verbinden». Das Plugin erneuert das Token automatisch, dieser Schritt ist also nur einmal nötig."
+
+#: includes/class-admin.php:559
+msgid "Meta’s guide: Instagram API with Instagram Login"
+msgstr "Anleitung von Meta: Instagram API with Instagram Login"
+
+#: includes/class-admin.php:561
+msgid "Then add the “Instagram Feed” widget to a page in Elementor."
+msgstr "Fügen Sie danach in Elementor das Widget «Instagram-Feed» zu einer Seite hinzu."
+
+#. translators: %s: time span, e.g. "5 mins".
+#: includes/class-admin.php:577
+#, php-format
+msgid "in %s"
+msgstr "in %s"
+
+#. translators: %s: time span, e.g. "5 mins".
+#: includes/class-admin.php:579
+#, php-format
+msgid "%s ago"
+msgstr "vor %s"
+
+#. translators: %s: technical error message.
+#: includes/class-api-client.php:192
+#, php-format
+msgid "Could not reach Instagram: %s"
+msgstr "Instagram ist nicht erreichbar: %s"
+
+#. translators: %d: HTTP status code.
+#: includes/class-api-client.php:206
+#, php-format
+msgid "Instagram sent an unexpected response (HTTP %d)."
+msgstr "Instagram hat eine unerwartete Antwort gesendet (HTTP %d)."
+
+#: includes/class-importer.php:95
+msgid "The downloaded file is not a supported image."
+msgstr "Die heruntergeladene Datei ist kein unterstütztes Bild."
+
+#. translators: %s: date.
+#: includes/class-importer.php:195
+#: includes/elementor/class-widget.php:1064
+#, php-format
+msgid "Instagram post from %s"
+msgstr "Instagram-Beitrag vom %s"
+
+#: includes/class-importer.php:196
+#: includes/elementor/class-widget.php:1071
+msgid "Instagram post"
+msgstr "Instagram-Beitrag"
+
+#: includes/class-sync.php:80
+msgid "No Instagram account is connected."
+msgstr "Es ist kein Instagram-Konto verbunden."
+
+#: includes/class-sync.php:84
+msgid "A sync is already running. Try again in a few minutes."
+msgstr "Eine Synchronisierung läuft bereits. Versuchen Sie es in ein paar Minuten erneut."
+
+#. translators: %s: error message.
+#: includes/class-sync.php:179
+#, php-format
+msgid "An image could not be imported: %s"
+msgstr "Ein Bild konnte nicht importiert werden: %s"
+
+#: includes/elementor/class-widget.php:149
+msgid "Number of posts"
+msgstr "Anzahl Beiträge"
+
+#: includes/elementor/class-widget.php:161
+msgid "Videos and reels"
+msgstr "Videos und Reels"
+
+#: includes/elementor/class-widget.php:162
+msgid "Shown with their cover image."
+msgstr "Werden mit ihrem Titelbild angezeigt."
+
+#: includes/elementor/class-widget.php:164
+msgid "Show"
+msgstr "Zeigen"
+
+#: includes/elementor/class-widget.php:165
+msgid "Hide"
+msgstr "Ausblenden"
+
+#: includes/elementor/class-widget.php:174
+msgid "Link to Instagram"
+msgstr "Mit Instagram verlinken"
+
+#: includes/elementor/class-widget.php:184
+#: includes/elementor/class-widget.php:448
+msgid "Video and album icon"
+msgstr "Video- und Album-Symbol"
+
+#: includes/elementor/class-widget.php:194
+msgid "Image format"
+msgstr "Bildformat"
+
+#: includes/elementor/class-widget.php:198
+msgid "Square (1:1)"
+msgstr "Quadratisch (1:1)"
+
+#: includes/elementor/class-widget.php:199
+msgid "Portrait (4:5)"
+msgstr "Hochformat (4:5)"
+
+#: includes/elementor/class-widget.php:200
+msgid "Portrait (3:4)"
+msgstr "Hochformat (3:4)"
+
+#: includes/elementor/class-widget.php:201
+msgid "Landscape (16:9)"
+msgstr "Querformat (16:9)"
+
+#: includes/elementor/class-widget.php:202
+msgid "Original"
+msgstr "Original"
+
+#: includes/elementor/class-widget.php:214
+msgid "Lazy-load images"
+msgstr "Bilder verzögert laden"
+
+#: includes/elementor/class-widget.php:215
+msgid "Keep on when the feed is further down the page. Turn off if it is visible without scrolling."
+msgstr "Eingeschaltet lassen, wenn der Feed weiter unten auf der Seite steht. Ausschalten, wenn er ohne Scrollen sichtbar ist."
+
+#: includes/elementor/class-widget.php:232
+msgid "Slider"
+msgstr "Slider"
+
+#: includes/elementor/class-widget.php:240
+msgid "Posts visible"
+msgstr "Sichtbare Beiträge"
+
+#: includes/elementor/class-widget.php:257
+msgid "Gap"
+msgstr "Abstand"
+
+#: includes/elementor/class-widget.php:284
+msgid "Arrows move by"
+msgstr "Pfeile blättern um"
+
+#: includes/elementor/class-widget.php:288
+msgid "One post"
+msgstr "Einen Beitrag"
+
+#: includes/elementor/class-widget.php:289
+msgid "All visible posts"
+msgstr "Alle sichtbaren Beiträge"
+
+#: includes/elementor/class-widget.php:297
+msgid "Loop"
+msgstr "Endlos"
+
+#: includes/elementor/class-widget.php:298
+msgid "After the last post, continue with the first."
+msgstr "Nach dem letzten Beitrag mit dem ersten weitermachen."
+
+#: includes/elementor/class-widget.php:308
+msgid "Transition duration (ms)"
+msgstr "Dauer des Übergangs (ms)"
+
+#: includes/elementor/class-widget.php:320
+msgid "Autoplay"
+msgstr "Automatisch abspielen"
+
+#: includes/elementor/class-widget.php:331
+msgid "Time per step (ms)"
+msgstr "Zeit pro Schritt (ms)"
+
+#: includes/elementor/class-widget.php:344
+msgid "Pause on hover"
+msgstr "Pause, wenn die Maus darauf zeigt"
+
+#: includes/elementor/class-widget.php:355
+msgid "Pause button"
+msgstr "Pause-Schaltfläche"
+
+#: includes/elementor/class-widget.php:356
+msgid "Recommended: lets visitors stop the movement (WCAG 2.2.2). Autoplay never runs for visitors who have reduced motion turned on."
+msgstr "Empfohlen: Besucher können die Bewegung anhalten (WCAG 2.2.2). Für Besucher mit aktivierter Einstellung «Bewegung reduzieren» läuft der Slider nie automatisch."
+
+#: includes/elementor/class-widget.php:367
+#: includes/elementor/class-widget.php:494
+msgid "Arrows"
+msgstr "Pfeile"
+
+#: includes/elementor/class-widget.php:378
+msgid "Arrow position"
+msgstr "Position der Pfeile"
+
+#: includes/elementor/class-widget.php:382
+msgid "On the images"
+msgstr "Auf den Bildern"
+
+#: includes/elementor/class-widget.php:383
+msgid "Next to the images"
+msgstr "Neben den Bildern"
+
+#: includes/elementor/class-widget.php:392
+msgid "Position indicator"
+msgstr "Positionsanzeige"
+
+#: includes/elementor/class-widget.php:393
+msgid "Dots switch to a counter when there are more than 15 positions."
+msgstr "Bei mehr als 15 Positionen wird statt Punkten ein Zähler angezeigt."
+
+#: includes/elementor/class-widget.php:397
+msgid "Dots"
+msgstr "Punkte"
+
+#: includes/elementor/class-widget.php:398
+msgid "Counter (3 / 12)"
+msgstr "Zähler (3 / 12)"
+
+#: includes/elementor/class-widget.php:399
+msgid "Progress bar"
+msgstr "Fortschrittsbalken"
+
+#: includes/elementor/class-widget.php:400
+msgid "None"
+msgstr "Keine"
+
+#: includes/elementor/class-widget.php:415
+msgid "Posts"
+msgstr "Beiträge"
+
+#: includes/elementor/class-widget.php:423
+#: includes/elementor/class-widget.php:600
+msgid "Corner radius"
+msgstr "Eckenradius"
+
+#: includes/elementor/class-widget.php:435
+msgid "Zoom on hover"
+msgstr "Zoom, wenn die Maus darauf zeigt"
+
+#: includes/elementor/class-widget.php:461
+msgid "Video and album icon background"
+msgstr "Hintergrund des Video- und Album-Symbols"
+
+#: includes/elementor/class-widget.php:474
+msgid "Keyboard focus outline"
+msgstr "Fokusrahmen (Tastatur)"
+
+#: includes/elementor/class-widget.php:475
+msgid "Visible when visitors navigate with the keyboard."
+msgstr "Sichtbar, wenn Besucher mit der Tastatur navigieren."
+
+#: includes/elementor/class-widget.php:503
+msgid "Button size"
+msgstr "Grösse der Schaltfläche"
+
+#: includes/elementor/class-widget.php:504
+msgid "At least 44 px is recommended for touch screens."
+msgstr "Für Touchscreens werden mindestens 44 px empfohlen."
+
+#: includes/elementor/class-widget.php:530
+msgid "Icon size"
+msgstr "Symbolgrösse"
+
+#: includes/elementor/class-widget.php:556
+msgid "Distance from edge"
+msgstr "Abstand zum Rand"
+
+#: includes/elementor/class-widget.php:578
+msgid "Vertical position"
+msgstr "Vertikale Position"
+
+#: includes/elementor/class-widget.php:627
+msgid "Normal"
+msgstr "Normal"
+
+#: includes/elementor/class-widget.php:633
+#: includes/elementor/class-widget.php:664
+msgid "Icon color"
+msgstr "Symbolfarbe"
+
+#: includes/elementor/class-widget.php:645
+#: includes/elementor/class-widget.php:676
+msgid "Background"
+msgstr "Hintergrund"
+
+#: includes/elementor/class-widget.php:658
+msgid "Hover"
+msgstr "Hover"
+
+#: includes/elementor/class-widget.php:699
+msgid "Position indicator and pause button"
+msgstr "Positionsanzeige und Pause-Schaltfläche"
+
+#: includes/elementor/class-widget.php:729
+msgid "Space above"
+msgstr "Abstand oben"
+
+#: includes/elementor/class-widget.php:751
+msgid "Alignment"
+msgstr "Ausrichtung"
+
+#: includes/elementor/class-widget.php:755
+msgid "Left"
+msgstr "Links"
+
+#: includes/elementor/class-widget.php:759
+msgid "Center"
+msgstr "Mitte"
+
+#: includes/elementor/class-widget.php:763
+msgid "Right"
+msgstr "Rechts"
+
+#: includes/elementor/class-widget.php:782
+msgid "Dot size"
+msgstr "Punktgrösse"
+
+#: includes/elementor/class-widget.php:805
+msgid "Color"
+msgstr "Farbe"
+
+#: includes/elementor/class-widget.php:818
+msgid "Active color"
+msgstr "Aktive Farbe"
+
+#: includes/elementor/class-widget.php:819
+msgid "Also used for the progress bar and the pause button."
+msgstr "Wird auch für den Fortschrittsbalken und die Pause-Schaltfläche verwendet."
+
+#: includes/elementor/class-widget.php:831
+msgid "Track color"
+msgstr "Farbe der Leiste"
+
+#: includes/elementor/class-widget.php:844
+msgid "Counter color"
+msgstr "Farbe des Zählers"
+
+#: includes/elementor/class-widget.php:879
+msgid "No Instagram posts yet. Connect your account under Settings → Instagram Feed in the WordPress admin."
+msgstr "Noch keine Instagram-Beiträge. Verbinden Sie Ihr Konto im WordPress-Adminbereich unter Einstellungen → Instagram-Feed."
+
+#. translators: %d: position number.
+#: includes/elementor/class-widget.php:909
+#, php-format
+msgid "Show position %d"
+msgstr "Position %d anzeigen"
+
+#: includes/elementor/class-widget.php:910
+msgid "Pause automatic scrolling"
+msgstr "Automatisches Blättern anhalten"
+
+#: includes/elementor/class-widget.php:911
+msgid "Start automatic scrolling"
+msgstr "Automatisches Blättern starten"
+
+#: includes/elementor/class-widget.php:919
+msgid "carousel"
+msgstr "Karussell"
+
+#. translators: %s: Instagram username.
+#: includes/elementor/class-widget.php:922
+#, php-format
+msgid "Instagram posts by @%s"
+msgstr "Instagram-Beiträge von @%s"
+
+#: includes/elementor/class-widget.php:923
+msgid "Instagram posts"
+msgstr "Instagram-Beiträge"
+
+#: includes/elementor/class-widget.php:939
+msgid "Previous posts"
+msgstr "Vorherige Beiträge"
+
+#: includes/elementor/class-widget.php:942
+msgid "Next posts"
+msgstr "Nächste Beiträge"
+
+#: includes/elementor/class-widget.php:1035
+msgid "slide"
+msgstr "Folie"
+
+#. translators: 1: position, 2: total.
+#: includes/elementor/class-widget.php:1035
+#, php-format
+msgid "%1$d of %2$d"
+msgstr "%1$d von %2$d"
+
+#. translators: %s: date.
+#: includes/elementor/class-widget.php:1066
+#, php-format
+msgid "Instagram video from %s"
+msgstr "Instagram-Video vom %s"
+
+#. translators: %s: date.
+#: includes/elementor/class-widget.php:1068
+#, php-format
+msgid "Instagram album from %s"
+msgstr "Instagram-Album vom %s"
+
+#: includes/elementor/class-widget.php:1073
+msgid "(opens in a new tab)"
+msgstr "(öffnet in neuem Tab)"
+
+#: includes/elementor/class-widget.php:1228
+msgid "Feed settings"
+msgstr "Feed-Einstellungen"
+
+#: includes/elementor/class-widget.php:1231
+msgid "No Instagram account is connected yet."
+msgstr "Es ist noch kein Instagram-Konto verbunden."
+
+#. translators: 1: Instagram username, 2: number of posts.
+#: includes/elementor/class-widget.php:1236
+#, php-format
+msgid "Posts from @%1$s (%2$d cached), updated automatically."
+msgstr "Beiträge von @%1$s (%2$d gespeichert), werden automatisch aktualisiert."

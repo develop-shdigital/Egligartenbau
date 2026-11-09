@@ -1,14 +1,19 @@
 <?php
 /**
- * Connecting an Instagram account: "Log in with Instagram" (OAuth) and
- * pasted access tokens.
+ * Connecting an Instagram account with the "Login to Instagram" button.
  *
- * OAuth flow (Business Login for Instagram):
- * 1. An administrator clicks the button; we store a single-use `state` and
- *    send the browser to instagram.com.
- * 2. Instagram redirects back to our REST route with `code` and `state`.
- * 3. We exchange the code for a short-lived token, then for a 60-day token,
- *    save it and run the first sync.
+ * The login runs through the SH Digital connect service (see the
+ * connect-service folder in the repository), which owns the Meta app and its
+ * secret, like Smash Balloon's connect server:
+ *
+ * 1. The button stores a single-use nonce for the administrator and sends
+ *    the browser to the connect service with a state that contains this
+ *    site's return address and the nonce.
+ * 2. The connect service sends the browser to Instagram. After the login it
+ *    exchanges Instagram's code for a 60-day token and posts the token back
+ *    to this site's REST route.
+ * 3. This site checks the nonce, verifies the token with Instagram, saves it
+ *    and runs the first sync. From then on the site renews the token itself.
  *
  * @package SHD\InstagramFeed
  */
@@ -27,6 +32,12 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Connector {
 
+	/**
+	 * Address of the SH Digital connect service. Override with the
+	 * SHD_IGF_CONNECT_URL constant or the shd_igf_connect_url filter.
+	 */
+	const DEFAULT_CONNECT_URL = 'https://connect.shdigital.ch/instagram/';
+
 	const REST_NAMESPACE = 'shd-igf/v1';
 
 	const REST_ROUTE = '/oauth';
@@ -39,47 +50,58 @@ final class Connector {
 	const CAPABILITY = 'manage_options';
 
 	/**
-	 * OAuth callback route.
+	 * Route that receives the token from the connect service.
 	 */
 	public static function register_routes(): void {
 		register_rest_route(
 			self::REST_NAMESPACE,
 			self::REST_ROUTE,
 			array(
-				'methods'             => WP_REST_Server::READABLE,
+				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( self::class, 'handle_callback' ),
-				// Public by design: Instagram's redirect carries no WordPress nonce.
-				// Every request is authorised by the single-use state instead.
+				// Public by design: the connect service posts here from the
+				// visitor's browser without a WordPress nonce. Every request is
+				// authorised by the single-use nonce in the state instead.
 				'permission_callback' => '__return_true',
 			)
 		);
 	}
 
 	/**
-	 * The redirect URI to register in the Meta app. No query string, with a
-	 * trailing slash (the App Dashboard adds one).
+	 * The connect service address.
 	 *
 	 * @return string
 	 */
-	public static function redirect_uri(): string {
-		return (string) apply_filters( 'shd_igf_redirect_uri', rest_url( self::REST_NAMESPACE . self::REST_ROUTE . '/' ) );
+	public static function connect_url(): string {
+		$url = defined( 'SHD_IGF_CONNECT_URL' ) ? (string) constant( 'SHD_IGF_CONNECT_URL' ) : self::DEFAULT_CONNECT_URL;
+		return esc_url_raw( (string) apply_filters( 'shd_igf_connect_url', $url ) );
 	}
 
 	/**
-	 * Instagram's login URL for this administrator.
+	 * Where the connect service sends the token back to.
 	 *
-	 * @param int  $user_id   Administrator who starts the login.
-	 * @param bool $reconnect Force a new Instagram login, e.g. to switch accounts.
+	 * @return string
+	 */
+	public static function return_url(): string {
+		return rest_url( self::REST_NAMESPACE . self::REST_ROUTE . '/' );
+	}
+
+	/**
+	 * Address the "Login to Instagram" button leads to.
+	 *
+	 * @param int  $user_id   Administrator who clicks the button.
+	 * @param bool $reconnect Ask Instagram for a new login, e.g. to switch accounts.
 	 * @return string|WP_Error
 	 */
-	public static function authorize_url( int $user_id, bool $reconnect = false ) {
-		if ( ! Options::app_is_configured() ) {
-			return new WP_Error( 'shd_igf_no_app', __( 'Add the Instagram app ID and secret first (Instagram app section below).', 'shd-instagram-feed' ) );
+	public static function login_url( int $user_id, bool $reconnect = false ) {
+		$connect = self::connect_url();
+		if ( '' === $connect ) {
+			return new WP_Error( 'shd_igf_no_connect_service', __( 'The Instagram login is not available: no connect service is configured.', 'shd-instagram-feed' ) );
 		}
 
-		$state = wp_generate_password( 40, false, false );
+		$nonce = wp_generate_password( 40, false, false );
 		set_transient(
-			self::STATE_PREFIX . hash( 'sha256', $state ),
+			self::STATE_PREFIX . hash( 'sha256', $nonce ),
 			array(
 				'user_id' => $user_id,
 				'created' => time(),
@@ -87,20 +109,37 @@ final class Connector {
 			self::STATE_TTL
 		);
 
-		$app = Options::get_app();
-		return Api_Client::authorize_url( $app['app_id'], self::redirect_uri(), $state, $reconnect );
+		$state = self::encode_state(
+			array(
+				'v' => 1,
+				'r' => self::return_url(),
+				'n' => $nonce,
+			)
+		);
+
+		$args = array(
+			'start' => '1',
+			'state' => $state,
+		);
+		if ( $reconnect ) {
+			$args['reauth'] = '1';
+		}
+
+		return add_query_arg( array_map( 'rawurlencode', $args ), $connect );
 	}
 
 	/**
-	 * Instagram redirects here after the login.
+	 * The connect service posts the result of the login here.
 	 *
-	 * @param WP_REST_Request $request Request with `code` and `state`, or `error`.
+	 * @param WP_REST_Request $request Body: `state` plus `access_token` and `expires_in`, or `error`.
 	 * @return WP_REST_Response Redirect to the settings page.
 	 */
 	public static function handle_callback( WP_REST_Request $request ): WP_REST_Response {
-		$state  = (string) $request->get_param( 'state' );
-		$key    = self::STATE_PREFIX . hash( 'sha256', $state );
-		$stored = '' !== $state ? get_transient( $key ) : false;
+		$params = $request->get_body_params();
+		$state  = self::decode_state( isset( $params['state'] ) ? (string) $params['state'] : '' );
+		$nonce  = isset( $state['n'] ) && is_string( $state['n'] ) ? $state['n'] : '';
+		$key    = self::STATE_PREFIX . hash( 'sha256', $nonce );
+		$stored = '' !== $nonce ? get_transient( $key ) : false;
 
 		if ( false !== $stored ) {
 			delete_transient( $key ); // Single use.
@@ -111,13 +150,13 @@ final class Connector {
 		}
 
 		$user_id = (int) $stored['user_id'];
-		$error   = self::oauth_error( $request );
+		$error   = isset( $params['error'] ) ? sanitize_key( (string) $params['error'] ) : '';
 
 		if ( '' !== $error ) {
 			if ( 'access_denied' === $error ) {
 				return self::redirect( $user_id, 'warning', __( 'The Instagram login was cancelled. Nothing was changed.', 'shd-instagram-feed' ) );
 			}
-			$description = sanitize_text_field( (string) $request->get_param( 'error_description' ) );
+			$description = isset( $params['error_description'] ) ? sanitize_text_field( (string) $params['error_description'] ) : '';
 			return self::redirect(
 				$user_id,
 				'error',
@@ -129,69 +168,19 @@ final class Connector {
 			);
 		}
 
-		// Instagram appends "#_" to the redirect; it is not part of the code.
-		$code = (string) $request->get_param( 'code' );
-		$code = (string) preg_replace( '/#_?$/', '', $code );
-		$code = (string) preg_replace( '/[^A-Za-z0-9_\-]/', '', $code );
-		if ( '' === $code ) {
-			return self::redirect( $user_id, 'error', __( 'Instagram did not send an authorization code. Please try again.', 'shd-instagram-feed' ) );
+		$token = isset( $params['access_token'] ) ? Sync::clean_token( (string) $params['access_token'] ) : '';
+		if ( '' === $token ) {
+			return self::redirect( $user_id, 'error', __( 'Instagram did not return an access token. Please try again.', 'shd-instagram-feed' ) );
 		}
 
-		$app = Options::get_app();
-		if ( '' === $app['app_id'] || '' === $app['app_secret'] ) {
-			return self::redirect( $user_id, 'error', __( 'Add the Instagram app ID and secret first (Instagram app section below).', 'shd-instagram-feed' ) );
-		}
-
-		$short = Api_Client::exchange_code( $app['app_id'], $app['app_secret'], self::redirect_uri(), $code );
-		$long  = is_wp_error( $short ) ? $short : Api_Client::exchange_long_lived( $app['app_secret'], (string) $short['access_token'] );
-
-		if ( is_wp_error( $long ) ) {
-			return self::redirect(
-				$user_id,
-				'error',
-				sprintf(
-					/* translators: %s: error message from Instagram. */
-					__( 'Instagram login failed: %s', 'shd-instagram-feed' ),
-					$long->get_error_message()
-				)
-			);
-		}
+		$expires_in = isset( $params['expires_in'] ) ? absint( $params['expires_in'] ) : 0;
 
 		// Attribute the imported images to the administrator who connected.
 		wp_set_current_user( $user_id );
 
-		$expires_in = isset( $long['expires_in'] ) ? absint( $long['expires_in'] ) : 0;
-
-		list( $type, $message ) = self::connect( Sync::clean_token( (string) $long['access_token'] ), $expires_in ? time() + $expires_in : 0 );
+		list( $type, $message ) = self::connect( $token, $expires_in ? time() + $expires_in : 0 );
 
 		return self::redirect( $user_id, $type, $message );
-	}
-
-	/**
-	 * The `error` Instagram sends when the login is cancelled or fails.
-	 *
-	 * WordPress core unsets $_GET['error'] for every request that matches a
-	 * rewrite rule (a leftover of its 404 handling), REST URLs included, so it
-	 * is read from the raw query string, with `error_reason` as a fallback.
-	 *
-	 * @param WP_REST_Request $request Callback request.
-	 * @return string Sanitized error code, empty when there is none.
-	 */
-	private static function oauth_error( WP_REST_Request $request ): string {
-		$error = (string) $request->get_param( 'error' );
-
-		if ( '' === $error && isset( $_SERVER['QUERY_STRING'] ) ) {
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- parsed here; only `error` is used, through sanitize_key() below.
-			parse_str( (string) wp_unslash( $_SERVER['QUERY_STRING'] ), $query );
-			$error = isset( $query['error'] ) && is_string( $query['error'] ) ? $query['error'] : '';
-		}
-
-		if ( '' === $error ) {
-			$reason = sanitize_key( (string) $request->get_param( 'error_reason' ) );
-			$error  = 'user_denied' === $reason ? 'access_denied' : $reason;
-		}
-
-		return sanitize_key( $error );
 	}
 
 	/**
@@ -325,7 +314,32 @@ final class Connector {
 	}
 
 	/**
-	 * Send the browser back to the settings page.
+	 * Base64url-encoded JSON, safe in URLs without further escaping.
+	 *
+	 * @param array $data State data.
+	 * @return string
+	 */
+	private static function encode_state( array $data ): string {
+		return rtrim( strtr( base64_encode( (string) wp_json_encode( $data ) ), '+/', '-_' ), '=' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- URL-safe transport of a JSON state, not obfuscation.
+	}
+
+	/**
+	 * Decode a state created by encode_state().
+	 *
+	 * @param string $state State.
+	 * @return array Empty when invalid.
+	 */
+	private static function decode_state( string $state ): array {
+		if ( '' === $state || strlen( $state ) > 2048 || ! preg_match( '/^[A-Za-z0-9_-]+$/', $state ) ) {
+			return array();
+		}
+		$json = base64_decode( strtr( $state, '-_', '+/' ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- see encode_state().
+		$data = false === $json ? null : json_decode( $json, true );
+		return is_array( $data ) ? $data : array();
+	}
+
+	/**
+	 * Send the browser to the settings page (303: the callback is a POST).
 	 *
 	 * @param int    $user_id User to show the message to; 0 when the state was invalid.
 	 * @param string $type    Notice type.
@@ -342,7 +356,7 @@ final class Connector {
 			$url = add_query_arg( 'shd_igf_login', 'expired', $url );
 		}
 
-		$response = new WP_REST_Response( null, 302 );
+		$response = new WP_REST_Response( null, 303 );
 		$response->header( 'Location', $url );
 		$response->header( 'Cache-Control', 'no-store, private' );
 		return $response;

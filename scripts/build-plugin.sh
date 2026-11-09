@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Build the SHD Instagram Feed plugin: minify the slider script, compile
-# translations (if WP-CLI is available) and create an installable zip.
+# translations (if WP-CLI is available) and create an installable zip, plus a
+# zip of the connect service (without config.php).
 #
 # Usage: scripts/build-plugin.sh [output-dir]
 # Needs: node/npx, zip. Optional: wp (WP-CLI) for translations.
@@ -30,3 +31,7 @@ mkdir -p "$out"
 rm -f "$out/$slug-$version.zip"
 (cd "$plugins" && zip -qr "$out/$slug-$version.zip" "$slug" -x "*.DS_Store")
 echo "Created $out/$slug-$version.zip"
+
+rm -f "$out/shd-instagram-connect-service.zip"
+(cd "$root" && zip -qr "$out/shd-instagram-connect-service.zip" connect-service -x "connect-service/config.php" "*.DS_Store")
+echo "Created $out/shd-instagram-connect-service.zip"

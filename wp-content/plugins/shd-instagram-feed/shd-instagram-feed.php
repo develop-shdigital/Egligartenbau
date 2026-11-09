@@ -3,7 +3,7 @@
  * Plugin Name:       SHD Instagram Feed
  * Plugin URI:        https://shdigital.ch/
  * Description:       Shows your latest Instagram posts in a fast, accessible slider with an Elementor widget. Posts and images are synced in the background and stored locally, so visitors never load anything from Instagram.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Requires Plugins:  elementor
@@ -23,7 +23,7 @@ namespace SHD\InstagramFeed;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION               = '0.2.0';
+const VERSION               = '0.3.0';
 const PLUGIN_FILE           = __FILE__;
 const MIN_ELEMENTOR_VERSION = '3.5.0';
 

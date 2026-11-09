@@ -30,8 +30,8 @@ final class Options {
 	/** Result of the last sync, for the settings page and admin notices. */
 	const STATUS = 'shd_igf_status';
 
-	/** Instagram app credentials for "Log in with Instagram". */
-	const APP = 'shd_igf_app';
+	/** Removed in 0.3.0: per-site Instagram app credentials. Deleted on upgrade. */
+	const LEGACY_APP = 'shd_igf_app';
 
 	const MAX_POSTS = 50;
 
@@ -195,70 +195,13 @@ final class Options {
 	}
 
 	/**
-	 * Instagram app credentials. Constants in wp-config.php win over the
-	 * settings page, so the secret can be kept out of the database:
-	 * define( 'SHD_IGF_APP_ID', '…' ); define( 'SHD_IGF_APP_SECRET', '…' );
-	 *
-	 * @return array{app_id:string,app_secret:string,id_constant:bool,secret_constant:bool}
-	 */
-	public static function get_app(): array {
-		$stored = get_option( self::APP, array() );
-		$stored = is_array( $stored ) ? $stored : array();
-
-		$id_constant     = defined( 'SHD_IGF_APP_ID' ) && '' !== (string) constant( 'SHD_IGF_APP_ID' );
-		$secret_constant = defined( 'SHD_IGF_APP_SECRET' ) && '' !== (string) constant( 'SHD_IGF_APP_SECRET' );
-
-		return array(
-			'app_id'          => $id_constant ? (string) constant( 'SHD_IGF_APP_ID' ) : ( isset( $stored['app_id'] ) ? (string) $stored['app_id'] : '' ),
-			'app_secret'      => $secret_constant ? (string) constant( 'SHD_IGF_APP_SECRET' ) : ( isset( $stored['app_secret'] ) ? (string) $stored['app_secret'] : '' ),
-			'id_constant'     => $id_constant,
-			'secret_constant' => $secret_constant,
-		);
-	}
-
-	/**
-	 * Whether "Log in with Instagram" can be used.
-	 *
-	 * @return bool
-	 */
-	public static function app_is_configured(): bool {
-		$app = self::get_app();
-		return '' !== $app['app_id'] && '' !== $app['app_secret'];
-	}
-
-	/**
-	 * Validate app credentials from the settings form. An empty secret field
-	 * keeps the saved secret, so it never has to be printed back.
-	 *
-	 * @param mixed $input Raw input.
-	 * @return array{app_id:string,app_secret:string}
-	 */
-	public static function sanitize_app( $input ): array {
-		$input  = is_array( $input ) ? $input : array();
-		$stored = get_option( self::APP, array() );
-		$stored = is_array( $stored ) ? $stored : array();
-
-		$app_id = isset( $input['app_id'] ) ? preg_replace( '/\D/', '', (string) $input['app_id'] ) : '';
-		$secret = isset( $input['app_secret'] ) ? preg_replace( '/[^A-Za-z0-9]/', '', (string) $input['app_secret'] ) : '';
-
-		if ( '' === $secret && isset( $stored['app_secret'] ) ) {
-			$secret = (string) $stored['app_secret'];
-		}
-
-		return array(
-			'app_id'     => (string) $app_id,
-			'app_secret' => (string) $secret,
-		);
-	}
-
-	/**
 	 * Create the options as non-autoloaded so they never load on every
-	 * request (the app secret in particular). Runs on activation and when the
+	 * request. Runs on activation and when the
 	 * settings page opens, i.e. before the Settings API could create an
 	 * option with the default autoload value.
 	 */
 	public static function install(): void {
-		$names = array( self::SETTINGS, self::CONNECTION, self::FEED, self::STATUS, self::APP );
+		$names = array( self::SETTINGS, self::CONNECTION, self::FEED, self::STATUS );
 
 		foreach ( $names as $name ) {
 			if ( false === get_option( $name ) ) {
@@ -268,5 +211,8 @@ final class Options {
 
 		// Fix options created before they were registered here.
 		wp_set_option_autoload_values( array_fill_keys( $names, false ) );
+
+		// The login now runs through the connect service: no app secret on the site.
+		delete_option( self::LEGACY_APP );
 	}
 }

@@ -1,0 +1,7 @@
+# Apache: serve only index.php.
+Options -Indexes
+DirectoryIndex index.php
+
+<FilesMatch "^(config|config\.sample)\.php$|\.md$">
+	Require all denied
+</FilesMatch>

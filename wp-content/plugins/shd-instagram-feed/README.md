@@ -8,38 +8,30 @@ Built to replace the hand-maintained Loop Carousel ("instagram-slider" posts) at
 
 - WordPress 6.4 or newer, PHP 7.4 or newer
 - Elementor 3.5 or newer (tested with Elementor 4.3.6 and Elementor Pro 4.3.3; Pro is not required)
-- An Instagram **professional account** (Business or Creator) and a Meta developer app (free)
+- An Instagram **professional account** (Business or Creator)
 
 ## Setup
 
 1. Install the plugin: *Plugins → Add New → Upload Plugin* with `shd-instagram-feed-<version>.zip`, then activate it.
-2. Set up the Instagram app (once; one app can serve all your client sites):
-   1. On [developers.facebook.com/apps](https://developers.facebook.com/apps), create an app of the type **Business** with the Instagram use case.
-   2. In the app, open *Instagram → API setup with Instagram business login → Set up Instagram business login → Business login settings* and add the site's **OAuth redirect URI** under *OAuth redirect URIs*. The plugin shows the exact address under *Settings → Instagram Feed* (for egligartenbau.com: `https://egligartenbau.com/wp-json/shd-igf/v1/oauth/`).
-   3. Copy the **Instagram app ID** and **Instagram app secret** from the same page into *Settings → Instagram Feed → Instagram app*, or define them in `wp-config.php` so the secret stays out of the database:
+2. Open *Settings → Instagram Feed* and click **Login to Instagram**. Log in on Instagram and allow access. You come back to WordPress connected, and the newest posts are imported right away (6 images per run, the rest follows in the background within a few minutes).
+3. In Elementor, search for the **Instagram Feed** widget and drag it onto the page. On egligartenbau.com it replaces the Loop Carousel in the "Gartenbau, Poolbau und Gartenunterhalt aus Leidenschaft." section.
 
-      ```php
-      define( 'SHD_IGF_APP_ID', '123456789012345' );
-      define( 'SHD_IGF_APP_SECRET', 'your-app-secret' );
-      ```
-   4. Add the client's Instagram account to the app (*Generate access tokens → Add account*). Accounts that are not added can only log in after Meta has granted the app **Advanced Access** through App Review.
+That's all on the site. The login is needed once: the plugin renews the token every week (Instagram tokens expire after 60 days without renewal). *Login to Instagram again* switches to another account.
 
-   The Instagram account must be a professional account (Business or Creator; switch in the Instagram app under Settings → *Account type and tools*).
-3. In *Settings → Instagram Feed*, click **Log in with Instagram**, log in on Instagram and allow access. You come back to WordPress connected; the newest posts are imported right away (6 images per run, the rest follows in the background within a few minutes).
-4. In Elementor, search for the **Instagram Feed** widget and drag it onto the page. On egligartenbau.com it replaces the Loop Carousel in the "Gartenbau, Poolbau und Gartenunterhalt aus Leidenschaft." section.
+The Instagram account must be a professional account (Business or Creator; switch in the Instagram app under Settings → *Account type and tools*).
 
-You only log in once: the plugin renews the token every week (Instagram tokens expire after 60 days without renewal). *Reconnect with Instagram* switches to another account.
+### How the button works
 
-Without the app setup you can still connect by pasting a token generated in the App Dashboard (*Connect with an access token instead*).
+Like Smash Balloon, the button logs in through a small **connect service** run by SH Digital, which owns the Meta app and its secret. Sites never need an app, an app secret or a redirect URI. The service is only involved while logging in. It is set up once for all client sites; see [`connect-service/README.md`](../../../connect-service/README.md). Its address is `Connector::DEFAULT_CONNECT_URL` (`https://connect.shdigital.ch/instagram/`) and can be changed per site with `define( 'SHD_IGF_CONNECT_URL', '…' );` in `wp-config.php`.
 
-Meta's guides: [Business Login for Instagram](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login), [Instagram API with Instagram Login](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/get-started).
+*Advanced: connect with an access token* on the settings page is a fallback for when the login can't be used, e.g. while the connect service is not set up yet.
 
 ### If the login doesn't work
 
-- **"Invalid redirect URI" on Instagram:** the redirect URI in the Meta app must match the one on the settings page exactly, including `https` and the trailing slash.
-- **The site isn't on https:** Instagram only redirects to https addresses.
-- **You end up on an error page from `/wp-json/`:** a security plugin is blocking the REST API for logged-out visitors. Allow the route `shd-igf/v1/oauth`. The route is safe to allow: it only accepts a single-use login state created by an administrator in the last 15 minutes.
-- **"Advanced Access" or "insufficient developer role" on Instagram:** add the account to the app (step 2.4) or get Advanced Access through App Review.
+- **A page from the connect service says the link is not valid:** start again from *Settings → Instagram Feed*. If it keeps happening, the site is not on https or not in the service's `allowed_hosts`.
+- **Instagram says the app has no access (e.g. "Insufficient developer role"):** the Meta app is still in development mode. Add the account to the app or finish Meta's App Review (see the connect service README).
+- **You end up on an error page from `/wp-json/`:** a security plugin blocks the REST API for logged-out visitors. Allow the route `shd-igf/v1/oauth`. It only accepts a login that an administrator of this site started in the last 15 minutes.
+- **"The Instagram login link has expired":** the login took longer than 15 minutes or the page was reloaded. Click the button again.
 
 ## Widget settings
 
@@ -75,7 +67,7 @@ To place the arrows exactly where the old Loop Carousel had them, set *Style →
 
 ## Privacy
 
-Visitors' browsers only load images from your own domain. The plugin never sends visitor data to Meta. The access token and the app secret are stored in the WordPress database (not autoloaded) and never printed back into pages. Use the `wp-config.php` constants to keep the app secret out of the database. The login only asks for `instagram_business_basic` (read profile and posts).
+Visitors' browsers only load images from your own domain. The plugin never sends visitor data to Meta. The access token is stored in the WordPress database (not autoloaded) and never printed back into pages. The site never sees the Meta app secret, which stays on the connect service. The login only asks for `instagram_business_basic` (read profile and posts).
 
 ## For developers
 
@@ -85,15 +77,15 @@ Filters:
 - `shd_igf_convert_to_webp` – return `false` to keep the original JPEGs.
 - `shd_igf_webp_quality` – WebP quality (default `82`).
 - `shd_igf_feed_items` – change or filter the posts before they are rendered, e.g. to hide a post by its `id`.
-- `shd_igf_redirect_uri` – the OAuth redirect URI (default `rest_url( 'shd-igf/v1/oauth/' )`).
+- `shd_igf_connect_url` – address of the connect service.
 
-Constants: `SHD_IGF_APP_ID`, `SHD_IGF_APP_SECRET` (override the app settings).
+Constant: `SHD_IGF_CONNECT_URL` (address of the connect service).
 
-Login flow: the button posts to `admin-post.php` (nonce, `manage_options`), which stores a random 40-character state for 15 minutes and redirects to `instagram.com/oauth/authorize` with scope `instagram_business_basic`. Instagram returns to the REST route `GET /wp-json/shd-igf/v1/oauth/`, which consumes the state (single use), exchanges the code for a short-lived token (`POST api.instagram.com/oauth/access_token`) and that for a 60-day token (`GET graph.instagram.com/access_token`), then saves it and runs the first sync. The app secret is only sent server-to-server.
+Login flow: the button posts to `admin-post.php` (nonce, `manage_options`), which stores a random 40-character nonce for 15 minutes and sends the browser to the connect service with a state (base64url JSON: return address `…/wp-json/shd-igf/v1/oauth/` and the nonce). The service sends it on to `instagram.com/oauth/authorize` (scope `instagram_business_basic`), exchanges the returned code for a 60-day token with the app secret, and posts the token back to the return address with an auto-submitting form. The REST route `POST /wp-json/shd-igf/v1/oauth/` consumes the nonce (single use), checks the token with Instagram, saves it and runs the first sync.
 
 Sync manually with WP-CLI: `wp cron event run shd_igf_sync`.
 
-Stored data: options `shd_igf_settings`, `shd_igf_connection`, `shd_igf_feed`, `shd_igf_status`, `shd_igf_app` (all non-autoloaded) and attachments with the meta key `_shd_igf_media_id`. Deactivating stops the background sync; deleting the plugin removes the options and the imported images.
+Stored data: options `shd_igf_settings`, `shd_igf_connection`, `shd_igf_feed`, `shd_igf_status` (all non-autoloaded) and attachments with the meta key `_shd_igf_media_id`. Deactivating stops the background sync; deleting the plugin removes the options and the imported images.
 
 Code layout:
 
@@ -101,8 +93,8 @@ Code layout:
 shd-instagram-feed.php          Plugin header and bootstrap
 includes/class-plugin.php       Hooks, assets, Elementor registration
 includes/class-admin.php        Settings page, connect / sync / disconnect, notices
-includes/class-connector.php    Log in with Instagram (OAuth), connecting a token
-includes/class-api-client.php   Instagram Graph API and OAuth endpoints (Instagram Login)
+includes/class-connector.php    Login to Instagram (via the connect service), connecting a token
+includes/class-api-client.php   Instagram Graph API (Instagram Login)
 includes/class-sync.php         Cron sync, token refresh, normalisation, pruning
 includes/class-importer.php     Image download, WebP conversion, attachments
 includes/class-feed.php         Read access for rendering
@@ -115,4 +107,4 @@ languages/                      POT, de_CH and de_DE translations
 
 Build an installable zip (minifies the script, recompiles translations when WP-CLI is available): `scripts/build-plugin.sh` from the repository root.
 
-Not included yet: hiding single posts from the admin screen (possible with `shd_igf_feed_items`), showing captions, dragging the slider with the mouse (arrows, keyboard, touch and trackpad work), and a central connect service that would let sites log in without their own Meta app (like Smash Balloon's).
+Not included yet: hiding single posts from the admin screen (possible with `shd_igf_feed_items`), showing captions, dragging the slider with the mouse (arrows, keyboard, touch and trackpad work).

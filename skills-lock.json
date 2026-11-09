@@ -1,11 +1,81 @@
 {
   "version": 1,
   "skills": {
+    "accessibility": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/accessibility/SKILL.md",
+      "computedHash": "612f913bcb03f0787b103c848cd7664b676a9aaf31f25d3270cc69cf5caaab95",
+      "installMode": "copy"
+    },
+    "core-web-vitals": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/core-web-vitals/SKILL.md",
+      "computedHash": "601b2cbb920fb0ea9814a3f11232d7883e1eb0923865218502ab1d73e9fc5172",
+      "installMode": "copy"
+    },
+    "elementor-experiments-and-markup": {
+      "source": "Lonsdale201/wp-agent-skills",
+      "sourceType": "github",
+      "skillPath": "elementor/elementor-experiments-and-markup/SKILL.md",
+      "computedHash": "a31f9c42cd6871eb566c9d2eefa936ca630bc73093eacd3aa5006a9c042b34c4",
+      "installMode": "copy"
+    },
+    "elementor-v3-widget-controls": {
+      "source": "Lonsdale201/wp-agent-skills",
+      "sourceType": "github",
+      "skillPath": "elementor/elementor-v3-widget-controls/SKILL.md",
+      "computedHash": "1f85f750d80c595f914148af899629d3ca061a1223d9ab5052e282fd86fd6bbe",
+      "installMode": "copy"
+    },
+    "elementor-v3-widget-development": {
+      "source": "Lonsdale201/wp-agent-skills",
+      "sourceType": "github",
+      "skillPath": "elementor/elementor-v3-widget-development/SKILL.md",
+      "computedHash": "f0911cb6d806aac68a940cc1c1ac2d1674af2fd3b3da40239dd37d1a3ab33321",
+      "installMode": "copy"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
       "skillPath": "skills/find-skills/SKILL.md",
       "computedHash": "913b9d37d0d54047dd65222bb8c67b2bf04e3cb87dcad1729068d7a8b2c8c396",
+      "installMode": "copy"
+    },
+    "performance": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/performance/SKILL.md",
+      "computedHash": "ce9d36f139a1b2a6a8ac2cb222698963b8076d2dd8b41685e8e8ae589cdcf1e4",
+      "installMode": "copy"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a",
+      "installMode": "copy"
+    },
+    "wp-performance": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-performance/SKILL.md",
+      "computedHash": "a38ef25bae1223aa3fb13e120add1ed63984f9032e9d990f4483b4e235f2baa3",
+      "installMode": "copy"
+    },
+    "wp-plugin-development": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-plugin-development/SKILL.md",
+      "computedHash": "317de0b7e3fdb7b2af5f72ae65445bcbeeadef3db9a2f0d23cdbb43ed8f65e8b",
+      "installMode": "copy"
+    },
+    "wp-project-triage": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-project-triage/SKILL.md",
+      "computedHash": "08f050cb3f2e651cca849e689552cbfeef3b0e3b0a8365ab8af00e8b30080a2e",
       "installMode": "copy"
     }
   }

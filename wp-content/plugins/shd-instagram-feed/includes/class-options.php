@@ -212,7 +212,7 @@ final class Options {
 		// Fix options created before they were registered here.
 		wp_set_option_autoload_values( array_fill_keys( $names, false ) );
 
-		// The login now runs through the connect service: no app secret on the site.
+		// The login now runs through the login service: no app secret on the site.
 		delete_option( self::LEGACY_APP );
 	}
 }

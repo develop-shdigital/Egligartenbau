@@ -2,14 +2,14 @@
 /**
  * Connecting an Instagram account with the "Login to Instagram" button.
  *
- * The login runs through the SH Digital connect service (see the
- * connect-service folder in the repository), which owns the Meta app and its
- * secret, like Smash Balloon's connect server:
+ * The login runs through the login service of the site that owns the Meta
+ * app (SH Digital's website runs this same plugin in service mode, see
+ * Connect_Service), like Smash Balloon's connect server:
  *
  * 1. The button stores a single-use nonce for the administrator and sends
- *    the browser to the connect service with a state that contains this
- *    site's return address and the nonce.
- * 2. The connect service sends the browser to Instagram. After the login it
+ *    the browser to the login service with a state that contains this site's
+ *    return address and the nonce.
+ * 2. The login service sends the browser to Instagram. After the login it
  *    exchanges Instagram's code for a 60-day token and posts the token back
  *    to this site's REST route.
  * 3. This site checks the nonce, verifies the token with Instagram, saves it
@@ -33,10 +33,11 @@ defined( 'ABSPATH' ) || exit;
 final class Connector {
 
 	/**
-	 * Address of the SH Digital connect service. Override with the
-	 * SHD_IGF_CONNECT_URL constant or the shd_igf_connect_url filter.
+	 * Login service on SH Digital's website (this plugin in service mode).
+	 * Override with the SHD_IGF_CONNECT_URL constant or the
+	 * shd_igf_connect_url filter.
 	 */
-	const DEFAULT_CONNECT_URL = 'https://connect.shdigital.ch/instagram/';
+	const DEFAULT_CONNECT_URL = 'https://www.sh-digital.ch/wp-json/shd-igf/v1/connect/';
 
 	const REST_NAMESPACE = 'shd-igf/v1';
 
@@ -50,7 +51,7 @@ final class Connector {
 	const CAPABILITY = 'manage_options';
 
 	/**
-	 * Route that receives the token from the connect service.
+	 * Route that receives the token from the login service.
 	 */
 	public static function register_routes(): void {
 		register_rest_route(
@@ -59,7 +60,7 @@ final class Connector {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( self::class, 'handle_callback' ),
-				// Public by design: the connect service posts here from the
+				// Public by design: the login service posts here from the
 				// visitor's browser without a WordPress nonce. Every request is
 				// authorised by the single-use nonce in the state instead.
 				'permission_callback' => '__return_true',
@@ -68,7 +69,7 @@ final class Connector {
 	}
 
 	/**
-	 * The connect service address.
+	 * The login service address.
 	 *
 	 * @return string
 	 */
@@ -78,7 +79,7 @@ final class Connector {
 	}
 
 	/**
-	 * Where the connect service sends the token back to.
+	 * Where the login service sends the token back to.
 	 *
 	 * @return string
 	 */
@@ -96,7 +97,7 @@ final class Connector {
 	public static function login_url( int $user_id, bool $reconnect = false ) {
 		$connect = self::connect_url();
 		if ( '' === $connect ) {
-			return new WP_Error( 'shd_igf_no_connect_service', __( 'The Instagram login is not available: no connect service is configured.', 'shd-instagram-feed' ) );
+			return new WP_Error( 'shd_igf_no_connect_service', __( 'The Instagram login is not available: no login service is configured.', 'shd-instagram-feed' ) );
 		}
 
 		$nonce = wp_generate_password( 40, false, false );
@@ -129,7 +130,7 @@ final class Connector {
 	}
 
 	/**
-	 * The connect service posts the result of the login here.
+	 * The login service posts the result of the login here.
 	 *
 	 * @param WP_REST_Request $request Body: `state` plus `access_token` and `expires_in`, or `error`.
 	 * @return WP_REST_Response Redirect to the settings page.

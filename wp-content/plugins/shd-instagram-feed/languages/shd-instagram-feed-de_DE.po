@@ -1,14 +1,14 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: SHD Instagram Feed 0.3.0\n"
-"Report-Msgid-Bugs-To: https://shdigital.ch/\n"
+"Project-Id-Version: SHD Instagram Feed 0.4.0\n"
+"Report-Msgid-Bugs-To: https://www.sh-digital.ch/\n"
 "Last-Translator: SH Digital\n"
 "Language-Team: SH Digital\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T10:30:29+00:00\n"
-"PO-Revision-Date: 2026-11-09 10:28+0000\n"
+"POT-Creation-Date: 2026-11-09T10:45:22+00:00\n"
+"PO-Revision-Date: 2026-11-09 10:43+0000\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: shd-instagram-feed\n"
@@ -21,8 +21,8 @@ msgstr "SHD Instagram Feed"
 #. Plugin URI of the plugin
 #. Author URI of the plugin
 #: shd-instagram-feed.php
-msgid "https://shdigital.ch/"
-msgstr "https://shdigital.ch/"
+msgid "https://www.sh-digital.ch/"
+msgstr "https://www.sh-digital.ch/"
 
 #. Description of the plugin
 #: shd-instagram-feed.php
@@ -42,7 +42,7 @@ msgid "Instagram Feed"
 msgstr "Instagram-Feed"
 
 #: includes/class-admin.php:68
-#: includes/class-admin.php:519
+#: includes/class-admin.php:546
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -116,172 +116,214 @@ msgstr "Der Feed wurde seit %1$s nicht mehr aktualisiert. Letzter Fehler: %2$s"
 msgid "The Instagram login link has expired or was already used. Please click “Login to Instagram” again."
 msgstr "Der Anmeldelink ist abgelaufen oder wurde bereits verwendet. Klicken Sie bitte erneut auf „Bei Instagram anmelden“."
 
-#: includes/class-admin.php:391
+#: includes/class-admin.php:392
 msgid "Instagram account"
 msgstr "Instagram-Konto"
 
-#: includes/class-admin.php:395
+#: includes/class-admin.php:396
 msgid "Account"
 msgstr "Konto"
 
-#: includes/class-admin.php:402
-#: includes/class-admin.php:448
+#: includes/class-admin.php:403
+#: includes/class-admin.php:449
 msgid "Access token"
 msgstr "Zugriffstoken"
 
-#: includes/class-admin.php:406
+#: includes/class-admin.php:407
 msgid "Not valid any more"
 msgstr "Nicht mehr gültig"
 
 #. translators: %s: date.
-#: includes/class-admin.php:410
+#: includes/class-admin.php:411
 #, php-format
 msgid "Valid until %s, renewed automatically every week"
 msgstr "Gültig bis %s, wird jede Woche automatisch erneuert"
 
-#: includes/class-admin.php:418
+#: includes/class-admin.php:419
 msgid "Connect the Instagram account whose posts should appear on the website."
 msgstr "Verbinden Sie das Instagram-Konto, dessen Beiträge auf der Website erscheinen sollen."
 
-#: includes/class-admin.php:428
+#: includes/class-admin.php:429
 msgid "Login to Instagram again"
 msgstr "Erneut bei Instagram anmelden"
 
-#: includes/class-admin.php:428
+#: includes/class-admin.php:429
 msgid "Login to Instagram"
 msgstr "Bei Instagram anmelden"
 
-#: includes/class-admin.php:435
+#: includes/class-admin.php:436
 msgid "Disconnect"
 msgstr "Verbindung trennen"
 
-#: includes/class-admin.php:436
+#: includes/class-admin.php:437
 msgid "Also delete the cached posts and images"
 msgstr "Auch die gespeicherten Beiträge und Bilder löschen"
 
-#: includes/class-admin.php:442
+#: includes/class-admin.php:443
 msgid "Advanced: connect with an access token"
 msgstr "Erweitert: mit einem Zugriffstoken verbinden"
 
-#: includes/class-admin.php:443
+#: includes/class-admin.php:444
 msgid "Only needed if the login button cannot be used. Generate a token in the Meta App Dashboard (Instagram → “API setup with Instagram business login” → “Generate token”) and paste it here."
 msgstr "Nur nötig, wenn die Anmeldung nicht funktioniert. Erstellen Sie im Meta App Dashboard ein Token (Instagram → „API setup with Instagram business login“ → „Generate token“) und fügen Sie es hier ein."
 
-#: includes/class-admin.php:451
+#: includes/class-admin.php:452
 msgid "Connect with token"
 msgstr "Mit Token verbinden"
 
-#: includes/class-admin.php:468
+#: includes/class-admin.php:470
+msgid "Instagram login service"
+msgstr "Instagram-Anmeldedienst"
+
+#: includes/class-admin.php:471
+msgid "This website provides the “Login to Instagram” button for all websites that use the plugin, because the Instagram app ID and secret are defined in its wp-config.php."
+msgstr "Diese Website stellt die Schaltfläche „Bei Instagram anmelden“ für alle Websites mit dem Plugin bereit, weil in ihrer wp-config.php die Instagram-App-ID und das App-Secret definiert sind."
+
+#: includes/class-admin.php:473
+msgid "OAuth redirect URI"
+msgstr "OAuth-Weiterleitungs-URI"
+
+#: includes/class-admin.php:476
+msgid "Enter exactly this address in the Meta app under Instagram → “API setup with Instagram business login” → “Business login settings” → “OAuth redirect URIs”."
+msgstr "Tragen Sie genau diese Adresse in der Meta-App ein unter Instagram → „API setup with Instagram business login“ → „Business login settings“ → „OAuth redirect URIs“."
+
+#: includes/class-admin.php:478
+msgid "Allowed websites"
+msgstr "Erlaubte Websites"
+
+#: includes/class-admin.php:479
+msgid "All websites that use the plugin (https)"
+msgstr "Alle Websites mit dem Plugin (https)"
+
+#: includes/class-admin.php:495
 #: includes/elementor/class-widget.php:130
 msgid "Feed"
 msgstr "Feed"
 
-#: includes/class-admin.php:470
+#: includes/class-admin.php:497
 msgid "Cached posts"
 msgstr "Gespeicherte Beiträge"
 
-#: includes/class-admin.php:472
+#: includes/class-admin.php:499
 msgid "Last update"
 msgstr "Letzte Aktualisierung"
 
-#: includes/class-admin.php:473
+#: includes/class-admin.php:500
 msgid "Never"
 msgstr "Nie"
 
-#: includes/class-admin.php:474
+#: includes/class-admin.php:501
 msgid "Next check"
 msgstr "Nächste Prüfung"
 
-#: includes/class-admin.php:475
+#: includes/class-admin.php:502
 msgid "Not scheduled"
 msgstr "Nicht geplant"
 
-#: includes/class-admin.php:477
+#: includes/class-admin.php:504
 msgid "Waiting"
 msgstr "Ausstehend"
 
 #. translators: %d: number of images.
-#: includes/class-admin.php:481
+#: includes/class-admin.php:508
 #, php-format
 msgid "%d image is being imported in the background"
 msgid_plural "%d images are being imported in the background"
 msgstr[0] "%d Bild wird im Hintergrund importiert"
 msgstr[1] "%d Bilder werden im Hintergrund importiert"
 
-#: includes/class-admin.php:486
+#: includes/class-admin.php:513
 msgid "Last error"
 msgstr "Letzter Fehler"
 
-#: includes/class-admin.php:505
+#: includes/class-admin.php:532
 msgid "Check for new posts now"
 msgstr "Jetzt nach neuen Beiträgen suchen"
 
-#: includes/class-admin.php:508
+#: includes/class-admin.php:535
 msgid "Then add the “Instagram Feed” widget to a page in Elementor."
 msgstr "Fügen Sie danach in Elementor das Widget „Instagram-Feed“ zu einer Seite hinzu."
 
 #. translators: %s: time span, e.g. "5 mins".
-#: includes/class-admin.php:541
+#: includes/class-admin.php:568
 #, php-format
 msgid "in %s"
 msgstr "in %s"
 
 #. translators: %s: time span, e.g. "5 mins".
-#: includes/class-admin.php:543
+#: includes/class-admin.php:570
 #, php-format
 msgid "%s ago"
 msgstr "vor %s"
 
 #. translators: %s: technical error message.
 #: includes/class-api-client.php:204
+#: includes/class-connect-service.php:334
 #, php-format
 msgid "Could not reach Instagram: %s"
 msgstr "Instagram ist nicht erreichbar: %s"
 
 #. translators: %d: HTTP status code.
 #: includes/class-api-client.php:218
+#: includes/class-connect-service.php:345
 #, php-format
 msgid "Instagram sent an unexpected response (HTTP %d)."
 msgstr "Instagram hat eine unerwartete Antwort gesendet (HTTP %d)."
 
-#: includes/class-connector.php:99
-msgid "The Instagram login is not available: no connect service is configured."
-msgstr "Die Instagram-Anmeldung ist nicht verfügbar: Es ist kein Verbindungsdienst eingerichtet."
+#: includes/class-connect-service.php:115
+msgid "This login link is not valid or this website may not use it. Please start again in WordPress under Settings → Instagram Feed."
+msgstr "Dieser Anmeldelink ist ungültig oder diese Website darf ihn nicht verwenden. Bitte starten Sie erneut in WordPress unter Einstellungen → Instagram-Feed."
 
-#: includes/class-connector.php:157
+#: includes/class-connect-service.php:366
+msgid "Instagram did not return an access token."
+msgstr "Instagram hat kein Zugriffstoken zurückgegeben."
+
+#: includes/class-connect-service.php:395
+msgid "Returning to WordPress …"
+msgstr "Zurück zu WordPress …"
+
+#: includes/class-connect-service.php:397
+msgid "Continue"
+msgstr "Weiter"
+
+#: includes/class-connector.php:100
+msgid "The Instagram login is not available: no login service is configured."
+msgstr "Die Instagram-Anmeldung ist nicht verfügbar: Es ist kein Anmeldedienst eingerichtet."
+
+#: includes/class-connector.php:158
 msgid "The Instagram login was cancelled. Nothing was changed."
 msgstr "Die Instagram-Anmeldung wurde abgebrochen. Es wurde nichts geändert."
 
 #. translators: %s: error message from Instagram.
-#: includes/class-connector.php:165
+#: includes/class-connector.php:166
 #, php-format
 msgid "Instagram login failed: %s"
 msgstr "Die Instagram-Anmeldung ist fehlgeschlagen: %s"
 
-#: includes/class-connector.php:173
+#: includes/class-connector.php:174
 msgid "Instagram did not return an access token. Please try again."
 msgstr "Instagram hat kein Zugriffstoken zurückgegeben. Bitte versuchen Sie es erneut."
 
 #. translators: %s: error message from Instagram.
-#: includes/class-connector.php:203
+#: includes/class-connector.php:204
 #, php-format
 msgid "Instagram did not accept this token: %s"
 msgstr "Instagram hat dieses Token nicht akzeptiert: %s"
 
 #. translators: %s: Instagram username.
-#: includes/class-connector.php:229
+#: includes/class-connector.php:230
 #, php-format
 msgid "Connected to @%s."
 msgstr "Verbunden mit @%s."
 
 #. translators: %s: error message.
-#: includes/class-connector.php:250
+#: includes/class-connector.php:251
 #, php-format
 msgid "Sync failed: %s"
 msgstr "Synchronisierung fehlgeschlagen: %s"
 
 #. translators: %d: number of posts.
-#: includes/class-connector.php:259
+#: includes/class-connector.php:260
 #, php-format
 msgid "%d post is up to date."
 msgid_plural "%d posts are up to date."
@@ -289,7 +331,7 @@ msgstr[0] "%d Beitrag ist aktuell."
 msgstr[1] "%d Beiträge sind aktuell."
 
 #. translators: %d: number of images.
-#: includes/class-connector.php:267
+#: includes/class-connector.php:268
 #, php-format
 msgid "%d new image imported."
 msgid_plural "%d new images imported."
@@ -297,7 +339,7 @@ msgstr[0] "%d neues Bild importiert."
 msgstr[1] "%d neue Bilder importiert."
 
 #. translators: %d: number of images.
-#: includes/class-connector.php:274
+#: includes/class-connector.php:275
 #, php-format
 msgid "%d more image will be imported in the background within a few minutes."
 msgid_plural "%d more images will be imported in the background within a few minutes."
@@ -305,7 +347,7 @@ msgstr[0] "%d weiteres Bild wird in den nächsten Minuten im Hintergrund importi
 msgstr[1] "%d weitere Bilder werden in den nächsten Minuten im Hintergrund importiert."
 
 #. translators: %d: number of images.
-#: includes/class-connector.php:281
+#: includes/class-connector.php:282
 #, php-format
 msgid "%d image could not be imported and will be retried."
 msgid_plural "%d images could not be imported and will be retried."

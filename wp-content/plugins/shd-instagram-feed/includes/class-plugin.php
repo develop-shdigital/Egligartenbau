@@ -24,6 +24,7 @@ final class Plugin {
 		add_action( Sync::HOOK, array( Sync::class, 'run_cron' ) );
 		add_action( Sync::CONTINUE_HOOK, array( Sync::class, 'run_cron' ) );
 		add_action( 'rest_api_init', array( Connector::class, 'register_routes' ) );
+		add_action( 'rest_api_init', array( Connect_Service::class, 'register_routes' ) );
 
 		if ( is_admin() ) {
 			require_once __DIR__ . '/class-admin.php';

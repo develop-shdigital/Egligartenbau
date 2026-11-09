@@ -139,7 +139,7 @@ final class Admin {
 	}
 
 	/**
-	 * "Login to Instagram": send the browser to the connect service, which
+	 * "Login to Instagram": send the browser to the login service, which
 	 * forwards it to Instagram's login.
 	 */
 	public static function handle_oauth_start(): void {
@@ -158,7 +158,7 @@ final class Admin {
 	}
 
 	/**
-	 * Allow the redirect to the connect service.
+	 * Allow the redirect to the login service.
 	 *
 	 * @param array $hosts Allowed hosts.
 	 * @return array
@@ -372,6 +372,7 @@ final class Admin {
 
 			<?php
 			self::render_account_card();
+			self::render_service_card();
 			self::render_feed_card();
 			self::render_settings_card();
 			?>
@@ -451,6 +452,32 @@ final class Admin {
 					<?php submit_button( __( 'Connect with token', 'shd-instagram-feed' ), 'secondary', 'submit', false ); ?>
 				</form>
 			</details>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Card on the website that provides the login for other sites.
+	 */
+	private static function render_service_card(): void {
+		if ( ! Connect_Service::is_enabled() ) {
+			return;
+		}
+
+		$hosts = Connect_Service::allowed_hosts();
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'Instagram login service', 'shd-instagram-feed' ); ?></h2>
+			<p><?php esc_html_e( 'This website provides the “Login to Instagram” button for all websites that use the plugin, because the Instagram app ID and secret are defined in its wp-config.php.', 'shd-instagram-feed' ); ?></p>
+			<dl>
+				<dt><?php esc_html_e( 'OAuth redirect URI', 'shd-instagram-feed' ); ?></dt>
+				<dd>
+					<code><?php echo esc_html( Connect_Service::redirect_uri() ); ?></code><br>
+					<span class="description"><?php esc_html_e( 'Enter exactly this address in the Meta app under Instagram → “API setup with Instagram business login” → “Business login settings” → “OAuth redirect URIs”.', 'shd-instagram-feed' ); ?></span>
+				</dd>
+				<dt><?php esc_html_e( 'Allowed websites', 'shd-instagram-feed' ); ?></dt>
+				<dd><?php echo esc_html( $hosts ? implode( ', ', $hosts ) : __( 'All websites that use the plugin (https)', 'shd-instagram-feed' ) ); ?></dd>
+			</dl>
 		</div>
 		<?php
 	}

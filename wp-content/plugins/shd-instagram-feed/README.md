@@ -22,14 +22,36 @@ The Instagram account must be a professional account (Business or Creator; switc
 
 ### How the button works
 
-Like Smash Balloon, the button logs in through a small **connect service** run by SH Digital, which owns the Meta app and its secret. Sites never need an app, an app secret or a redirect URI. The service is only involved while logging in. It is set up once for all client sites; see [`connect-service/README.md`](../../../connect-service/README.md). Its address is `Connector::DEFAULT_CONNECT_URL` (`https://connect.shdigital.ch/instagram/`) and can be changed per site with `define( 'SHD_IGF_CONNECT_URL', '…' );` in `wp-config.php`.
+Like Smash Balloon, the button logs in through one Meta app that belongs to SH Digital. Its secret must not be in the zip that client sites install, so the same plugin has a **login service mode**: it is switched on only on www.sh-digital.ch, where the app ID and secret are defined in `wp-config.php`. Client sites send the login there (`https://www.sh-digital.ch/wp-json/shd-igf/v1/connect/`) and get the token back. They never need an app, a secret or a redirect URI, and after the login they renew the token themselves.
 
-*Advanced: connect with an access token* on the settings page is a fallback for when the login can't be used, e.g. while the connect service is not set up yet.
+*Advanced: connect with an access token* on the settings page is a fallback for when the login can't be used, e.g. before the login service is set up.
+
+### Set up the login service (once, on www.sh-digital.ch)
+
+1. **Meta app:** on [developers.facebook.com/apps](https://developers.facebook.com/apps) create an app of the type **Business** with the Instagram use case ("Manage messaging & content on Instagram"). Clients never see it.
+2. **Plugin:** install this plugin on www.sh-digital.ch (Elementor is required anyway; a feed there is optional).
+3. **wp-config.php** of www.sh-digital.ch, with the values from the app (*Instagram → API setup with Instagram business login → Set up Instagram business login → Business login settings*):
+
+   ```php
+   define( 'SHD_IGF_APP_ID', '123456789012345' );      // "Instagram app ID"
+   define( 'SHD_IGF_APP_SECRET', 'your-app-secret' );  // "Instagram app secret"
+   // Optional: only these sites may log in, e.g. 'egligartenbau.com, www.egligartenbau.com, *.sh-digital.ch'
+   // define( 'SHD_IGF_ALLOWED_HOSTS', '' );
+   ```
+4. **Redirect URI:** *Settings → Instagram Feed* on www.sh-digital.ch now shows the card *Instagram login service* with the address to enter under **OAuth redirect URIs** in the same Meta settings: `https://www.sh-digital.ch/wp-json/shd-igf/v1/connect/`.
+5. **Check:** `https://www.sh-digital.ch/wp-json/shd-igf/v1/connect/?health=1` returns `{"ok":true,…}`.
+
+Which accounts can log in:
+
+- While the Meta app is in development mode, only Instagram accounts added to the app can log in (*Instagram → API setup with Instagram business login → Generate access tokens → Add account*, or as Instagram testers under *App roles*). That is enough for testing and a few clients.
+- To let any client log in without adding the account first, request **Advanced Access** for `instagram_business_basic` in *App Review* and switch the app to *Live*. Meta asks for business verification, a privacy policy URL and a short screencast of the login.
+
+To run the login service on another site, define the constants there and point client sites to it with `define( 'SHD_IGF_CONNECT_URL', 'https://…/wp-json/shd-igf/v1/connect/' );`, or change `Connector::DEFAULT_CONNECT_URL` before building the zip.
 
 ### If the login doesn't work
 
-- **A page from the connect service says the link is not valid:** start again from *Settings → Instagram Feed*. If it keeps happening, the site is not on https or not in the service's `allowed_hosts`.
-- **Instagram says the app has no access (e.g. "Insufficient developer role"):** the Meta app is still in development mode. Add the account to the app or finish Meta's App Review (see the connect service README).
+- **A page from www.sh-digital.ch says the link is not valid:** start again from *Settings → Instagram Feed*. If it keeps happening, the site is not on https or not in `SHD_IGF_ALLOWED_HOSTS` of the login service.
+- **Instagram says the app has no access (e.g. "Insufficient developer role"):** the Meta app is still in development mode. Add the account to the app or finish Meta's App Review (see above).
 - **You end up on an error page from `/wp-json/`:** a security plugin blocks the REST API for logged-out visitors. Allow the route `shd-igf/v1/oauth`. It only accepts a login that an administrator of this site started in the last 15 minutes.
 - **"The Instagram login link has expired":** the login took longer than 15 minutes or the page was reloaded. Click the button again.
 
@@ -67,7 +89,7 @@ To place the arrows exactly where the old Loop Carousel had them, set *Style →
 
 ## Privacy
 
-Visitors' browsers only load images from your own domain. The plugin never sends visitor data to Meta. The access token is stored in the WordPress database (not autoloaded) and never printed back into pages. The site never sees the Meta app secret, which stays on the connect service. The login only asks for `instagram_business_basic` (read profile and posts).
+Visitors' browsers only load images from your own domain. The plugin never sends visitor data to Meta. The access token is stored in the WordPress database (not autoloaded) and never printed back into pages. Client sites never see the Meta app secret: it is only in the `wp-config.php` of the site running the login service, and only sent from there to Instagram. Tokens travel back in a POST body, never in an address. The login only asks for `instagram_business_basic` (read profile and posts).
 
 ## For developers
 
@@ -77,11 +99,12 @@ Filters:
 - `shd_igf_convert_to_webp` – return `false` to keep the original JPEGs.
 - `shd_igf_webp_quality` – WebP quality (default `82`).
 - `shd_igf_feed_items` – change or filter the posts before they are rendered, e.g. to hide a post by its `id`.
-- `shd_igf_connect_url` – address of the connect service.
+- `shd_igf_connect_url` – address of the login service.
+- `shd_igf_service_allowed_hosts`, `shd_igf_service_redirect_uri` – login service mode.
 
-Constant: `SHD_IGF_CONNECT_URL` (address of the connect service).
+Constants: `SHD_IGF_CONNECT_URL` (address of the login service); on the login service site `SHD_IGF_APP_ID`, `SHD_IGF_APP_SECRET`, optional `SHD_IGF_ALLOWED_HOSTS`.
 
-Login flow: the button posts to `admin-post.php` (nonce, `manage_options`), which stores a random 40-character nonce for 15 minutes and sends the browser to the connect service with a state (base64url JSON: return address `…/wp-json/shd-igf/v1/oauth/` and the nonce). The service sends it on to `instagram.com/oauth/authorize` (scope `instagram_business_basic`), exchanges the returned code for a 60-day token with the app secret, and posts the token back to the return address with an auto-submitting form. The REST route `POST /wp-json/shd-igf/v1/oauth/` consumes the nonce (single use), checks the token with Instagram, saves it and runs the first sync.
+Login flow: the button posts to `admin-post.php` (nonce, `manage_options`), which stores a random 40-character nonce for 15 minutes and sends the browser to the login service with a state (base64url JSON: return address `…/wp-json/shd-igf/v1/oauth/` and the nonce). The service (`GET …/wp-json/shd-igf/v1/connect/`, only registered when the app constants are defined) checks the return address (plugin route, https, optional allowlist) and sends the browser to `instagram.com/oauth/authorize` (scope `instagram_business_basic`). Instagram returns to the service, which exchanges the code for a short-lived and then a 60-day token with the app secret and posts the token back with an auto-submitting form. The client's REST route `POST …/wp-json/shd-igf/v1/oauth/` consumes the nonce (single use), checks the token with Instagram, saves it and runs the first sync.
 
 Sync manually with WP-CLI: `wp cron event run shd_igf_sync`.
 
@@ -93,7 +116,8 @@ Code layout:
 shd-instagram-feed.php          Plugin header and bootstrap
 includes/class-plugin.php       Hooks, assets, Elementor registration
 includes/class-admin.php        Settings page, connect / sync / disconnect, notices
-includes/class-connector.php    Login to Instagram (via the connect service), connecting a token
+includes/class-connector.php    Login to Instagram button and callback, connecting a token
+includes/class-connect-service.php  Login service mode (Meta app, code exchange)
 includes/class-api-client.php   Instagram Graph API (Instagram Login)
 includes/class-sync.php         Cron sync, token refresh, normalisation, pruning
 includes/class-importer.php     Image download, WebP conversion, attachments

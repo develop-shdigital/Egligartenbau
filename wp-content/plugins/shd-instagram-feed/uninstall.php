@@ -26,7 +26,7 @@ function shd_igf_uninstall_site() {
 		wp_delete_attachment( (int) $attachment_id, true );
 	}
 
-	foreach ( array( 'shd_igf_settings', 'shd_igf_connection', 'shd_igf_feed', 'shd_igf_status', 'shd_igf_app' ) as $option ) {
+	foreach ( array( 'shd_igf_settings', 'shd_igf_connection', 'shd_igf_feed', 'shd_igf_status', 'shd_igf_moderation', 'shd_igf_app' ) as $option ) {
 		delete_option( $option );
 	}
 

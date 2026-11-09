@@ -31,6 +31,7 @@ final class Admin {
 		add_action( 'admin_post_shd_igf_connect', array( self::class, 'handle_connect' ) );
 		add_action( 'admin_post_shd_igf_disconnect', array( self::class, 'handle_disconnect' ) );
 		add_action( 'admin_post_shd_igf_sync', array( self::class, 'handle_sync' ) );
+		add_action( 'admin_post_shd_igf_moderation', array( self::class, 'handle_moderation' ) );
 		add_action( 'add_option_' . Options::SETTINGS, array( Sync::class, 'schedule' ), 10, 0 );
 		add_action( 'update_option_' . Options::SETTINGS, array( Sync::class, 'schedule' ), 10, 0 );
 		add_action( 'admin_notices', array( self::class, 'connection_notice' ) );
@@ -116,7 +117,7 @@ final class Admin {
 			esc_attr( Options::SETTINGS ),
 			(int) $settings['keep'],
 			(int) Options::MAX_POSTS,
-			esc_html__( 'The newest posts are kept with their images. Older images are deleted automatically.', 'shd-instagram-feed' )
+			esc_html__( 'The newest posts are kept with their images; older images are deleted automatically. When only ticked posts are shown, ticked posts are kept in addition.', 'shd-instagram-feed' )
 		);
 	}
 
@@ -210,6 +211,40 @@ final class Admin {
 
 		list( $type, $message ) = Connector::sync_message( Sync::run() );
 		self::redirect( $type, $message );
+	}
+
+	/**
+	 * Save which posts appear on the website: ticked posts are shown.
+	 */
+	public static function handle_moderation(): void {
+		self::verify_request( 'shd_igf_moderation' );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce and capability checked in verify_request().
+		$new_posts = isset( $_POST['shd_igf_new_posts'] ) && 'hide' === sanitize_key( wp_unslash( $_POST['shd_igf_new_posts'] ) ) ? 'hide' : 'show';
+		$ticked    = isset( $_POST['shd_igf_visible'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['shd_igf_visible'] ) ) : array();
+		// phpcs:enable
+
+		$all    = array_map( 'strval', wp_list_pluck( Options::get_feed()['items'], 'id' ) );
+		$ticked = array_values( array_intersect( $all, $ticked ) );
+
+		Options::save_moderation(
+			array(
+				'new_posts' => $new_posts,
+				'selected'  => $ticked,
+				'hidden'    => array_values( array_diff( $all, $ticked ) ),
+			)
+		);
+
+		$counts = Feed::counts();
+		self::redirect(
+			'success',
+			sprintf(
+				/* translators: 1: number of posts shown, 2: number of posts. */
+				_n( 'Saved. %1$d of %2$d post is shown on the website.', 'Saved. %1$d of %2$d posts are shown on the website.', $counts['total'], 'shd-instagram-feed' ),
+				$counts['visible'],
+				$counts['total']
+			)
+		);
 	}
 
 	/**
@@ -361,22 +396,43 @@ final class Admin {
 				.shd-igf-admin dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 1em 0; }
 				.shd-igf-admin dt { font-weight: 600; }
 				.shd-igf-admin dd { margin: 0; }
-				.shd-igf-admin__thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
-				.shd-igf-admin__thumbs img { display: block; width: 64px; height: 64px; object-fit: cover; border-radius: 2px; }
 				.shd-igf-admin__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 1em 0; }
 				.shd-igf-admin__actions form { margin: 0; }
 				.shd-igf-admin details { margin: 1.5em 0 0; color: #50575e; }
 				.shd-igf-admin summary { cursor: pointer; }
 				.shd-igf-admin ol li { margin-bottom: 8px; }
+				.shd-igf-admin fieldset label { display: inline-block; margin: 4px 0; }
+				.shd-igf-admin__bulk { margin: 16px 0 8px; }
+				.shd-igf-admin__posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; }
+				.shd-igf-admin__posts li { position: relative; margin: 0; }
+				.shd-igf-admin__posts label { display: block; cursor: pointer; }
+				.shd-igf-admin__posts input { position: absolute; top: 6px; left: 6px; z-index: 1; margin: 0; }
+				.shd-igf-admin__posts img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 4px; box-shadow: 0 0 0 3px #2271b1; transition: opacity .15s, filter .15s, box-shadow .15s; }
+				.shd-igf-admin__posts input:not(:checked) ~ img { opacity: .35; filter: grayscale(1); box-shadow: 0 0 0 1px #c3c4c7; }
+				.shd-igf-admin__posts input:focus-visible ~ img { outline: 2px solid #1d2327; outline-offset: 4px; }
+				.shd-igf-admin__post-meta { display: block; margin-top: 6px; font-size: 12px; line-height: 1.4; color: #50575e; }
 			</style>
 
 			<?php
 			self::render_account_card();
 			self::render_service_card();
 			self::render_feed_card();
+			self::render_posts_card();
 			self::render_settings_card();
 			?>
 		</div>
+		<script>
+			document.addEventListener( 'click', function ( event ) {
+				var button = event.target.closest && event.target.closest( '[data-shd-igf-check]' );
+				if ( ! button ) {
+					return;
+				}
+				var on = '1' === button.getAttribute( 'data-shd-igf-check' );
+				document.querySelectorAll( '.shd-igf-admin__posts input[type=checkbox]' ).forEach( function ( box ) {
+					box.checked = on;
+				} );
+			} );
+		</script>
 		<?php
 	}
 
@@ -483,19 +539,21 @@ final class Admin {
 	}
 
 	/**
-	 * Card: feed status, preview, sync now.
+	 * Card: feed status, sync now.
 	 */
 	private static function render_feed_card(): void {
 		$connection = Options::get_connection();
 		$status     = Options::get_status();
-		$feed       = Options::get_feed();
+		$counts     = Feed::counts();
 		$next_run   = wp_next_scheduled( Sync::HOOK );
 		?>
 		<div class="card">
 			<h2><?php esc_html_e( 'Feed', 'shd-instagram-feed' ); ?></h2>
 			<dl>
 				<dt><?php esc_html_e( 'Cached posts', 'shd-instagram-feed' ); ?></dt>
-				<dd><?php echo esc_html( number_format_i18n( count( $feed['items'] ) ) ); ?></dd>
+				<dd><?php echo esc_html( number_format_i18n( $counts['total'] ) ); ?></dd>
+				<dt><?php esc_html_e( 'Shown on the website', 'shd-instagram-feed' ); ?></dt>
+				<dd><?php echo esc_html( number_format_i18n( $counts['visible'] ) ); ?></dd>
 				<dt><?php esc_html_e( 'Last update', 'shd-instagram-feed' ); ?></dt>
 				<dd><?php echo esc_html( $status['last_success'] ? self::relative_time( $status['last_success'] ) : __( 'Never', 'shd-instagram-feed' ) ); ?></dd>
 				<dt><?php esc_html_e( 'Next check', 'shd-instagram-feed' ); ?></dt>
@@ -515,16 +573,6 @@ final class Admin {
 				<?php endif; ?>
 			</dl>
 
-			<?php if ( $feed['items'] ) : ?>
-				<div class="shd-igf-admin__thumbs">
-					<?php foreach ( array_slice( $feed['items'], 0, 16 ) as $item ) : ?>
-						<a href="<?php echo esc_url( $item['permalink'] ); ?>" target="_blank" rel="noopener">
-							<?php echo wp_get_attachment_image( (int) $item['attachment_id'], 'thumbnail', false, array( 'loading' => 'lazy' ) ); ?>
-						</a>
-					<?php endforeach; ?>
-				</div>
-			<?php endif; ?>
-
 			<?php if ( '' !== $connection['token'] ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="shd_igf_sync">
@@ -533,6 +581,83 @@ final class Admin {
 				</form>
 			<?php endif; ?>
 			<p class="description"><?php esc_html_e( 'Then add the “Instagram Feed” widget to a page in Elementor.', 'shd-instagram-feed' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Card: choose which posts appear on the website.
+	 */
+	private static function render_posts_card(): void {
+		$feed = Options::get_feed();
+		if ( ! $feed['items'] ) {
+			return;
+		}
+
+		$moderation = Options::get_moderation();
+		$counts     = Feed::counts();
+		$labels     = array(
+			'video' => __( 'Video', 'shd-instagram-feed' ),
+			'album' => __( 'Album', 'shd-instagram-feed' ),
+		);
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'Posts on the website', 'shd-instagram-feed' ); ?></h2>
+			<p>
+				<?php
+				printf(
+					/* translators: 1: number of posts shown, 2: number of posts. */
+					esc_html( _n( 'Ticked posts appear in the Instagram Feed widget. %1$d of %2$d post is shown.', 'Ticked posts appear in the Instagram Feed widget. %1$d of %2$d posts are shown.', $counts['total'], 'shd-instagram-feed' ) ),
+					(int) $counts['visible'],
+					(int) $counts['total']
+				);
+				?>
+			</p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="shd_igf_moderation">
+				<?php wp_nonce_field( 'shd_igf_moderation' ); ?>
+
+				<fieldset>
+					<legend><strong><?php esc_html_e( 'New posts from Instagram', 'shd-instagram-feed' ); ?></strong></legend>
+					<label>
+						<input type="radio" name="shd_igf_new_posts" value="show"<?php checked( 'show', $moderation['new_posts'] ); ?>>
+						<?php esc_html_e( 'Show automatically. You only untick the posts you don’t want.', 'shd-instagram-feed' ); ?>
+					</label><br>
+					<label>
+						<input type="radio" name="shd_igf_new_posts" value="hide"<?php checked( 'hide', $moderation['new_posts'] ); ?>>
+						<?php esc_html_e( 'Only show them once you tick them. Ticked posts stay on the website even when they get older.', 'shd-instagram-feed' ); ?>
+					</label>
+				</fieldset>
+
+				<p class="shd-igf-admin__bulk">
+					<button type="button" class="button-link" data-shd-igf-check="1"><?php esc_html_e( 'Tick all', 'shd-instagram-feed' ); ?></button>
+					&middot;
+					<button type="button" class="button-link" data-shd-igf-check="0"><?php esc_html_e( 'Untick all', 'shd-instagram-feed' ); ?></button>
+				</p>
+
+				<ul class="shd-igf-admin__posts">
+					<?php foreach ( $feed['items'] as $item ) : ?>
+						<?php
+						if ( ! is_array( $item ) || empty( $item['id'] ) ) {
+							continue;
+						}
+						$id   = (string) $item['id'];
+						$type = isset( $item['type'], $labels[ $item['type'] ] ) ? $labels[ $item['type'] ] : '';
+						$date = ! empty( $item['timestamp'] ) ? wp_date( get_option( 'date_format' ), (int) $item['timestamp'] ) : '';
+						?>
+						<li>
+							<label>
+								<input type="checkbox" name="shd_igf_visible[]" value="<?php echo esc_attr( $id ); ?>"<?php checked( Options::is_visible( $id ) ); ?>>
+								<?php echo wp_get_attachment_image( (int) $item['attachment_id'], 'thumbnail', false, array( 'loading' => 'lazy' ) ); ?>
+								<span class="shd-igf-admin__post-meta"><?php echo esc_html( trim( $date . ( '' !== $type ? ' · ' . $type : '' ) ) ); ?></span>
+							</label>
+							<a class="shd-igf-admin__post-meta" href="<?php echo esc_url( $item['permalink'] ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'View on Instagram', 'shd-instagram-feed' ); ?></a>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+
+				<?php submit_button( __( 'Save selection', 'shd-instagram-feed' ), 'primary', 'submit', false ); ?>
+			</form>
 		</div>
 		<?php
 	}

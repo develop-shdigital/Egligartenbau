@@ -98,7 +98,7 @@ final class Sync {
 				return $raw;
 			}
 
-			$result = self::apply( $raw, $connection['username'] );
+			$result = self::apply( $raw, $connection['username'], $client );
 
 			if ( $result['pending'] > 0 && ! wp_next_scheduled( self::CONTINUE_HOOK ) ) {
 				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::CONTINUE_HOOK );
@@ -129,13 +129,15 @@ final class Sync {
 
 	/**
 	 * Turn API posts into the cached feed: reuse imported images, import new
-	 * ones (bounded per run), delete images of posts that left the feed.
+	 * ones (bounded per run), keep selected older posts, delete images of posts
+	 * that left the feed.
 	 *
-	 * @param array  $raw      Raw media objects from the API, newest first.
-	 * @param string $username Account username.
+	 * @param array      $raw      Raw media objects from the API, newest first.
+	 * @param string     $username Account username.
+	 * @param Api_Client $client   API client (to check selected older posts).
 	 * @return array{fetched:int,imported:int,pending:int,removed:int,failed:int,error:string}
 	 */
-	private static function apply( array $raw, string $username ): array {
+	private static function apply( array $raw, string $username, Api_Client $client ): array {
 		$items = array();
 		foreach ( $raw as $media ) {
 			$item = self::normalize( $media );
@@ -190,8 +192,20 @@ final class Sync {
 			$feed[]                = $item;
 		}
 
-		// Images of posts that are no longer among the latest posts.
-		$current = wp_list_pluck( $items, 'id' );
+		// Selected posts that are older than the newest posts.
+		$kept = self::keep_selected( $items, $existing, $client );
+		if ( $kept ) {
+			$feed = array_merge( $feed, $kept );
+			usort(
+				$feed,
+				static function ( array $a, array $b ): int {
+					return (int) $b['timestamp'] <=> (int) $a['timestamp'];
+				}
+			);
+		}
+
+		// Images of posts that are no longer among the latest or selected posts.
+		$current = array_merge( wp_list_pluck( $items, 'id' ), wp_list_pluck( $kept, 'id' ) );
 		foreach ( $existing as $media_id => $attachment_id ) {
 			if ( ! in_array( (string) $media_id, $current, true ) ) {
 				Importer::delete( (int) $attachment_id );
@@ -207,6 +221,8 @@ final class Sync {
 			)
 		);
 
+		self::forget_missing_posts( $current );
+
 		return array(
 			'fetched'  => count( $items ),
 			'imported' => $imported,
@@ -215,6 +231,70 @@ final class Sync {
 			'failed'   => $failed,
 			'error'    => $error,
 		);
+	}
+
+	/**
+	 * When only selected posts are shown, keep selected posts that dropped
+	 * out of the newest posts, as long as they still exist on Instagram
+	 * (checked at most once a day per post).
+	 *
+	 * @param array      $items    Newest posts from the API (normalised).
+	 * @param array      $existing Media ID => attachment ID.
+	 * @param Api_Client $client   API client.
+	 * @return array Posts to keep, from the previous feed.
+	 */
+	private static function keep_selected( array $items, array $existing, Api_Client $client ): array {
+		$moderation = Options::get_moderation();
+		if ( 'hide' !== $moderation['new_posts'] || ! $moderation['selected'] ) {
+			return array();
+		}
+
+		$newest = array_flip( wp_list_pluck( $items, 'id' ) );
+		$kept   = array();
+
+		foreach ( Options::get_feed()['items'] as $item ) {
+			$id = is_array( $item ) && isset( $item['id'] ) ? (string) $item['id'] : '';
+
+			if ( '' === $id || isset( $newest[ $id ] ) || ! isset( $existing[ $id ] ) || ! in_array( $id, $moderation['selected'], true ) ) {
+				continue;
+			}
+			if ( count( $kept ) >= Options::MAX_SELECTED ) {
+				break;
+			}
+
+			if ( time() - (int) ( $item['checked_at'] ?? 0 ) > DAY_IN_SECONDS ) {
+				$check = $client->get_media_item( $id );
+				if ( is_wp_error( $check ) && Api_Client::is_not_found_error( $check ) ) {
+					continue; // Deleted on Instagram.
+				}
+				if ( ! is_wp_error( $check ) ) {
+					$item['checked_at'] = time();
+				}
+				// Other errors (e.g. no connection): keep the post and check again next time.
+			}
+
+			$item['attachment_id'] = (int) $existing[ $id ];
+			$kept[]                = $item;
+		}
+
+		return $kept;
+	}
+
+	/**
+	 * Forget the selection of posts that are no longer in the feed.
+	 *
+	 * @param string[] $current Media IDs in the feed or waiting for their image.
+	 */
+	private static function forget_missing_posts( array $current ): void {
+		$moderation = Options::get_moderation();
+		$selected   = array_values( array_intersect( $moderation['selected'], $current ) );
+		$hidden     = array_values( array_intersect( $moderation['hidden'], $current ) );
+
+		if ( count( $selected ) !== count( $moderation['selected'] ) || count( $hidden ) !== count( $moderation['hidden'] ) ) {
+			$moderation['selected'] = $selected;
+			$moderation['hidden']   = $hidden;
+			Options::save_moderation( $moderation );
+		}
 	}
 
 	/**

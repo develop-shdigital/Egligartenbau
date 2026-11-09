@@ -30,10 +30,16 @@ final class Options {
 	/** Result of the last sync, for the settings page and admin notices. */
 	const STATUS = 'shd_igf_status';
 
+	/** Which posts appear on the website. */
+	const MODERATION = 'shd_igf_moderation';
+
 	/** Removed in 0.3.0: per-site Instagram app credentials. Deleted on upgrade. */
 	const LEGACY_APP = 'shd_igf_app';
 
 	const MAX_POSTS = 50;
+
+	/** Upper limit for posts kept because they were selected. */
+	const MAX_SELECTED = 100;
 
 	const INTERVALS = array( 'hourly', 'twicedaily', 'daily' );
 
@@ -43,6 +49,90 @@ final class Options {
 	 * @var array|null
 	 */
 	private static $feed = null;
+
+	/**
+	 * Per-request cache of the moderation option.
+	 *
+	 * @var array|null
+	 */
+	private static $moderation = null;
+
+	/**
+	 * Post selection.
+	 *
+	 * - `new_posts`: `show` (new posts appear automatically; hide single posts)
+	 *   or `hide` (only posts that were selected appear).
+	 * - `selected` / `hidden`: Instagram media IDs ticked / unticked when the
+	 *   selection was last saved. Posts in neither list are new.
+	 *
+	 * @return array{new_posts:string,selected:string[],hidden:string[]}
+	 */
+	public static function get_moderation(): array {
+		if ( null === self::$moderation ) {
+			$stored = get_option( self::MODERATION, array() );
+			$stored = is_array( $stored ) ? $stored : array();
+
+			self::$moderation = array(
+				'new_posts' => isset( $stored['new_posts'] ) && 'hide' === $stored['new_posts'] ? 'hide' : 'show',
+				'selected'  => self::id_list( $stored['selected'] ?? array() ),
+				'hidden'    => self::id_list( $stored['hidden'] ?? array() ),
+			);
+		}
+		return self::$moderation;
+	}
+
+	/**
+	 * Store the post selection.
+	 *
+	 * @param array $moderation See get_moderation().
+	 */
+	public static function save_moderation( array $moderation ): void {
+		self::$moderation = null;
+		update_option(
+			self::MODERATION,
+			array(
+				'new_posts' => isset( $moderation['new_posts'] ) && 'hide' === $moderation['new_posts'] ? 'hide' : 'show',
+				'selected'  => self::id_list( $moderation['selected'] ?? array() ),
+				'hidden'    => self::id_list( $moderation['hidden'] ?? array() ),
+			),
+			false
+		);
+	}
+
+	/**
+	 * Whether a post appears on the website.
+	 *
+	 * @param string $media_id Instagram media ID.
+	 * @return bool
+	 */
+	public static function is_visible( string $media_id ): bool {
+		$moderation = self::get_moderation();
+
+		if ( in_array( $media_id, $moderation['selected'], true ) ) {
+			return true;
+		}
+		if ( in_array( $media_id, $moderation['hidden'], true ) ) {
+			return false;
+		}
+		return 'show' === $moderation['new_posts'];
+	}
+
+	/**
+	 * Clean list of media IDs.
+	 *
+	 * @param mixed $ids IDs.
+	 * @return string[]
+	 */
+	private static function id_list( $ids ): array {
+		$clean = array();
+		foreach ( (array) $ids as $id ) {
+			$id = preg_replace( '/[^0-9A-Za-z_]/', '', (string) $id );
+			if ( '' !== $id ) {
+				$clean[ $id ] = $id;
+			}
+		}
+		return array_values( $clean );
+	}
 
 	/**
 	 * Default settings.
@@ -201,7 +291,7 @@ final class Options {
 	 * option with the default autoload value.
 	 */
 	public static function install(): void {
-		$names = array( self::SETTINGS, self::CONNECTION, self::FEED, self::STATUS );
+		$names = array( self::SETTINGS, self::CONNECTION, self::FEED, self::STATUS, self::MODERATION );
 
 		foreach ( $names as $name ) {
 			if ( false === get_option( $name ) ) {

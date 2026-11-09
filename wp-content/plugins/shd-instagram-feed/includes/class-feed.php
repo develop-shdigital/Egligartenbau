@@ -15,7 +15,8 @@ defined( 'ABSPATH' ) || exit;
 final class Feed {
 
 	/**
-	 * Posts to display, newest first.
+	 * Posts to display, newest first: only posts that are shown on the
+	 * website (see Settings → Instagram Feed → Posts on the website).
 	 *
 	 * @param int  $limit          Maximum number of posts.
 	 * @param bool $include_videos Whether to include videos and reels (shown with their cover image).
@@ -27,6 +28,9 @@ final class Feed {
 
 		foreach ( $feed['items'] as $item ) {
 			if ( ! is_array( $item ) || empty( $item['attachment_id'] ) || empty( $item['permalink'] ) ) {
+				continue;
+			}
+			if ( ! Options::is_visible( (string) ( $item['id'] ?? '' ) ) ) {
 				continue;
 			}
 			if ( ! $include_videos && isset( $item['type'] ) && 'video' === $item['type'] ) {
@@ -46,6 +50,29 @@ final class Feed {
 		 * @param int   $limit Requested number of posts.
 		 */
 		return (array) apply_filters( 'shd_igf_feed_items', $items, $limit );
+	}
+
+	/**
+	 * Number of cached posts and how many of them are shown.
+	 *
+	 * @return array{total:int,visible:int}
+	 */
+	public static function counts(): array {
+		$total   = 0;
+		$visible = 0;
+		foreach ( Options::get_feed()['items'] as $item ) {
+			if ( ! is_array( $item ) || empty( $item['id'] ) ) {
+				continue;
+			}
+			++$total;
+			if ( Options::is_visible( (string) $item['id'] ) ) {
+				++$visible;
+			}
+		}
+		return array(
+			'total'   => $total,
+			'visible' => $visible,
+		);
 	}
 
 	/**

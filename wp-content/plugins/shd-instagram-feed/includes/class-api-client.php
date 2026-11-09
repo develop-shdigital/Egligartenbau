@@ -132,6 +132,27 @@ final class Api_Client {
 	}
 
 	/**
+	 * One post, to check that a selected older post still exists.
+	 *
+	 * @param string $media_id Instagram media ID.
+	 * @return array|WP_Error
+	 */
+	public function get_media_item( string $media_id ) {
+		return $this->get( '/' . rawurlencode( $media_id ), array( 'fields' => 'id,permalink' ) );
+	}
+
+	/**
+	 * Whether the error means the post doesn't exist (any more).
+	 *
+	 * @param WP_Error $error Error from this client.
+	 * @return bool
+	 */
+	public static function is_not_found_error( WP_Error $error ): bool {
+		$data = $error->get_error_data();
+		return is_array( $data ) && 100 === (int) ( $data['api_code'] ?? 0 ) && 33 === (int) ( $data['api_subcode'] ?? 0 );
+	}
+
+	/**
 	 * Whether the error means the token is invalid or expired.
 	 *
 	 * @param WP_Error $error Error from this client.

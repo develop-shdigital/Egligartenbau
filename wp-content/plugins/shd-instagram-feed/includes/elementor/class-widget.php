@@ -876,7 +876,9 @@ final class Widget extends Widget_Base {
 			if ( $this->is_editor() ) {
 				printf(
 					'<div class="elementor-alert elementor-alert-info">%s</div>',
-					esc_html__( 'No Instagram posts yet. Connect your account under Settings → Instagram Feed in the WordPress admin.', 'shd-instagram-feed' )
+					Feed::counts()['total']
+						? esc_html__( 'No posts are selected for the website. Tick the posts to show under Settings → Instagram Feed → Posts on the website.', 'shd-instagram-feed' )
+						: esc_html__( 'No Instagram posts yet. Connect your account under Settings → Instagram Feed in the WordPress admin.', 'shd-instagram-feed' )
 				);
 			}
 			return;
@@ -1223,20 +1225,20 @@ final class Widget extends Widget_Base {
 	 */
 	private function feed_info_html(): string {
 		$connection = Options::get_connection();
-		$count      = count( Options::get_feed()['items'] );
+		$counts     = Feed::counts();
 		$url        = admin_url( 'options-general.php?page=shd-instagram-feed' );
-		$link       = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html__( 'Feed settings', 'shd-instagram-feed' ) );
 
 		if ( '' === $connection['token'] ) {
-			return esc_html__( 'No Instagram account is connected yet.', 'shd-instagram-feed' ) . ' ' . $link;
+			return esc_html__( 'No Instagram account is connected yet.', 'shd-instagram-feed' ) . ' ' . sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html__( 'Feed settings', 'shd-instagram-feed' ) );
 		}
 
 		return sprintf(
-			/* translators: 1: Instagram username, 2: number of posts. */
-			esc_html__( 'Posts from @%1$s (%2$d cached), updated automatically.', 'shd-instagram-feed' ),
+			/* translators: 1: Instagram username, 2: number of posts shown, 3: number of posts. */
+			esc_html__( 'Posts from @%1$s: %2$d of %3$d are shown.', 'shd-instagram-feed' ),
 			esc_html( $connection['username'] ),
-			(int) $count
-		) . ' ' . $link;
+			(int) $counts['visible'],
+			(int) $counts['total']
+		) . ' ' . sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html__( 'Choose posts', 'shd-instagram-feed' ) );
 	}
 
 	/**

@@ -55,6 +55,17 @@ To run the login service on another site, define the constants there and point c
 - **You end up on an error page from `/wp-json/`:** a security plugin blocks the REST API for logged-out visitors. Allow the route `shd-igf/v1/oauth`. It only accepts a login that an administrator of this site started in the last 15 minutes.
 - **"The Instagram login link has expired":** the login took longer than 15 minutes or the page was reloaded. Click the button again.
 
+## Choose which posts appear
+
+*Settings → Instagram Feed → Posts on the website* shows all synced posts as thumbnails. Ticked posts appear in the widget; untick a post to hide it, then click **Save selection**.
+
+*New posts from Instagram* decides what happens with posts published later:
+
+- **Show automatically** (default): every new post appears; you only untick the ones you don't want.
+- **Only show them once you tick them**: new posts stay hidden until you tick them. Ticked posts also stay on the website when they get older, even after they drop out of the newest *Posts to keep*: the plugin keeps their images and checks once a day that they still exist on Instagram. A ticked post that was deleted on Instagram disappears automatically.
+
+The widget's *Number of posts* applies to the posts that are shown. In Elementor, the panel shows how many posts are shown and links to this page.
+
 ## Widget settings
 
 **Content → Feed:** number of posts, show/hide videos and reels (cover image), link to Instagram, video/album icon, image format (square, 4:5, 3:4, 16:9, original), lazy loading.
@@ -98,7 +109,7 @@ Filters:
 - `shd_igf_api_version` – Graph API version (default `v27.0`).
 - `shd_igf_convert_to_webp` – return `false` to keep the original JPEGs.
 - `shd_igf_webp_quality` – WebP quality (default `82`).
-- `shd_igf_feed_items` – change or filter the posts before they are rendered, e.g. to hide a post by its `id`.
+- `shd_igf_feed_items` – change or filter the posts before they are rendered (after the selection on the settings page).
 - `shd_igf_connect_url` – address of the login service.
 - `shd_igf_service_allowed_hosts`, `shd_igf_service_redirect_uri` – login service mode.
 
@@ -108,7 +119,7 @@ Login flow: the button posts to `admin-post.php` (nonce, `manage_options`), whic
 
 Sync manually with WP-CLI: `wp cron event run shd_igf_sync`.
 
-Stored data: options `shd_igf_settings`, `shd_igf_connection`, `shd_igf_feed`, `shd_igf_status` (all non-autoloaded) and attachments with the meta key `_shd_igf_media_id`. Deactivating stops the background sync; deleting the plugin removes the options and the imported images.
+Stored data: options `shd_igf_settings`, `shd_igf_connection`, `shd_igf_feed`, `shd_igf_status`, `shd_igf_moderation` (all non-autoloaded) and attachments with the meta key `_shd_igf_media_id`. Deactivating stops the background sync; deleting the plugin removes the options and the imported images.
 
 Code layout:
 
@@ -131,4 +142,4 @@ languages/                      POT, de_CH and de_DE translations
 
 Build an installable zip (minifies the script, recompiles translations when WP-CLI is available): `scripts/build-plugin.sh` from the repository root.
 
-Not included yet: hiding single posts from the admin screen (possible with `shd_igf_feed_items`), showing captions, dragging the slider with the mouse (arrows, keyboard, touch and trackpad work).
+Not included yet: sorting the selected posts by hand, showing captions, dragging the slider with the mouse (arrows, keyboard, touch and trackpad work).

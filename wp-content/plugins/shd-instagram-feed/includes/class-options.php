@@ -27,18 +27,21 @@ final class Options {
 	/** Cached posts that the widget renders. */
 	const FEED = 'shd_igf_feed';
 
-	/** Result of the last sync, for the settings page and admin notices. */
+	/** Result of the last sync, for the Instagram page and admin notices. */
 	const STATUS = 'shd_igf_status';
 
 	/** Which posts appear on the website. */
 	const MODERATION = 'shd_igf_moderation';
+
+	/** Format of the moderation option; 2 since 0.6.0 (new posts wait for approval). */
+	const MODERATION_VERSION = 2;
 
 	/** Removed in 0.3.0: per-site Instagram app credentials. Deleted on upgrade. */
 	const LEGACY_APP = 'shd_igf_app';
 
 	const MAX_POSTS = 50;
 
-	/** Upper limit for posts kept because they were selected. */
+	/** Upper limit for posts kept because they were approved. */
 	const MAX_SELECTED = 100;
 
 	const INTERVALS = array( 'hourly', 'twicedaily', 'daily' );
@@ -58,25 +61,32 @@ final class Options {
 	private static $moderation = null;
 
 	/**
-	 * Post selection.
+	 * Which posts appear on the website.
 	 *
-	 * - `new_posts`: `show` (new posts appear automatically; hide single posts)
-	 *   or `hide` (only posts that were selected appear).
-	 * - `selected` / `hidden`: Instagram media IDs ticked / unticked when the
-	 *   selection was last saved. Posts in neither list are new.
+	 * - `new_posts`: `hide` (default: new posts wait until someone approves
+	 *   them) or `show` (new posts appear automatically; single posts can be
+	 *   hidden).
+	 * - `selected`: approved posts (Instagram media IDs).
+	 * - `hidden`: posts that must not appear.
+	 *   Posts in neither list are new: waiting for approval, or shown in
+	 *   `show` mode.
+	 * - `notified`: Instagram timestamp of the newest post that was announced
+	 *   by email (or when the account was connected). Newer posts waiting for
+	 *   approval are announced after the next sync.
 	 *
-	 * @return array{new_posts:string,selected:string[],hidden:string[]}
+	 * @return array{v:int,new_posts:string,selected:string[],hidden:string[],notified:int}
 	 */
 	public static function get_moderation(): array {
 		if ( null === self::$moderation ) {
 			$stored = get_option( self::MODERATION, array() );
 			$stored = is_array( $stored ) ? $stored : array();
 
-			self::$moderation = array(
-				'new_posts' => isset( $stored['new_posts'] ) && 'hide' === $stored['new_posts'] ? 'hide' : 'show',
-				'selected'  => self::id_list( $stored['selected'] ?? array() ),
-				'hidden'    => self::id_list( $stored['hidden'] ?? array() ),
-			);
+			if ( (int) ( $stored['v'] ?? 0 ) < self::MODERATION_VERSION ) {
+				$stored = self::clean_moderation( self::upgrade_moderation( $stored ) );
+				update_option( self::MODERATION, $stored, false );
+			}
+
+			self::$moderation = self::clean_moderation( $stored );
 		}
 		return self::$moderation;
 	}
@@ -88,14 +98,51 @@ final class Options {
 	 */
 	public static function save_moderation( array $moderation ): void {
 		self::$moderation = null;
-		update_option(
-			self::MODERATION,
-			array(
-				'new_posts' => isset( $moderation['new_posts'] ) && 'hide' === $moderation['new_posts'] ? 'hide' : 'show',
-				'selected'  => self::id_list( $moderation['selected'] ?? array() ),
-				'hidden'    => self::id_list( $moderation['hidden'] ?? array() ),
-			),
-			false
+		update_option( self::MODERATION, self::clean_moderation( $moderation ), false );
+	}
+
+	/**
+	 * Validated moderation data.
+	 *
+	 * @param array $data Raw data.
+	 * @return array See get_moderation().
+	 */
+	private static function clean_moderation( array $data ): array {
+		return array(
+			'v'         => self::MODERATION_VERSION,
+			'new_posts' => isset( $data['new_posts'] ) && 'show' === $data['new_posts'] ? 'show' : 'hide',
+			'selected'  => self::id_list( $data['selected'] ?? array() ),
+			'hidden'    => self::id_list( $data['hidden'] ?? array() ),
+			'notified'  => isset( $data['notified'] ) ? max( 0, (int) $data['notified'] ) : 0,
+		);
+	}
+
+	/**
+	 * Up to 0.5.0, new posts appeared automatically unless "only show them
+	 * once you tick them" was chosen. Since 0.6.0 new posts wait for
+	 * approval. The website must not change with the update, so every post it
+	 * shows now counts as approved. On a new installation the feed is empty.
+	 *
+	 * @param array $stored Stored data in the old format.
+	 * @return array
+	 */
+	private static function upgrade_moderation( array $stored ): array {
+		$selected = self::id_list( $stored['selected'] ?? array() );
+		$hidden   = self::id_list( $stored['hidden'] ?? array() );
+
+		if ( ! isset( $stored['new_posts'] ) || 'hide' !== $stored['new_posts'] ) {
+			foreach ( self::feed_ids() as $id ) {
+				if ( ! in_array( $id, $hidden, true ) ) {
+					$selected[] = $id;
+				}
+			}
+		}
+
+		return array(
+			'new_posts' => 'hide',
+			'selected'  => $selected,
+			'hidden'    => $hidden,
+			'notified'  => time(),
 		);
 	}
 
@@ -115,6 +162,99 @@ final class Options {
 			return false;
 		}
 		return 'show' === $moderation['new_posts'];
+	}
+
+	/**
+	 * Whether a post waits for someone to approve it.
+	 *
+	 * @param string $media_id Instagram media ID.
+	 * @return bool
+	 */
+	public static function is_awaiting( string $media_id ): bool {
+		$moderation = self::get_moderation();
+
+		return 'hide' === $moderation['new_posts']
+			&& ! in_array( $media_id, $moderation['selected'], true )
+			&& ! in_array( $media_id, $moderation['hidden'], true );
+	}
+
+	/**
+	 * Whether new posts need approval before they appear.
+	 *
+	 * @return bool
+	 */
+	public static function requires_approval(): bool {
+		return 'hide' === self::get_moderation()['new_posts'];
+	}
+
+	/**
+	 * Show (approve) and hide posts.
+	 *
+	 * @param string[] $show Media IDs to show.
+	 * @param string[] $hide Media IDs to hide.
+	 */
+	public static function set_visibility( array $show, array $hide = array() ): void {
+		$moderation = self::get_moderation();
+		$show       = self::id_list( $show );
+		$hide       = array_diff( self::id_list( $hide ), $show );
+
+		$moderation['selected'] = array_diff( array_merge( $moderation['selected'], $show ), $hide );
+		$moderation['hidden']   = array_diff( array_merge( $moderation['hidden'], $hide ), $show );
+
+		self::save_moderation( $moderation );
+	}
+
+	/**
+	 * Switch between "new posts wait for approval" and "new posts appear
+	 * automatically". Switching to approval keeps the website as it is: the
+	 * posts it shows count as approved, only later posts wait.
+	 *
+	 * @param bool $required Whether new posts need approval.
+	 */
+	public static function set_approval_required( bool $required ): void {
+		$moderation = self::get_moderation();
+		$current    = 'hide' === $moderation['new_posts'];
+		if ( $current === $required ) {
+			return;
+		}
+
+		if ( $required ) {
+			foreach ( self::feed_ids() as $id ) {
+				if ( self::is_visible( $id ) ) {
+					$moderation['selected'][] = $id;
+				}
+			}
+			$moderation['notified'] = time();
+		}
+
+		$moderation['new_posts'] = $required ? 'hide' : 'show';
+		self::save_moderation( $moderation );
+	}
+
+	/**
+	 * Remember up to which Instagram post date new posts were announced.
+	 *
+	 * @param int $timestamp Unix timestamp.
+	 */
+	public static function set_notified( int $timestamp ): void {
+		$moderation             = self::get_moderation();
+		$moderation['notified'] = $timestamp;
+		self::save_moderation( $moderation );
+	}
+
+	/**
+	 * Media IDs of the cached posts.
+	 *
+	 * @return string[]
+	 */
+	public static function feed_ids(): array {
+		$ids = array();
+		foreach ( self::get_feed()['items'] as $item ) {
+			if ( is_array( $item ) && ! empty( $item['id'] ) ) {
+				$ids[] = (string) $item['id'];
+			}
+		}
+		return $ids;
 	}
 
 	/**
@@ -287,7 +427,7 @@ final class Options {
 	/**
 	 * Create the options as non-autoloaded so they never load on every
 	 * request. Runs on activation and when the
-	 * settings page opens, i.e. before the Settings API could create an
+	 * Instagram page opens, i.e. before anything else could create an
 	 * option with the default autoload value.
 	 */
 	public static function install(): void {

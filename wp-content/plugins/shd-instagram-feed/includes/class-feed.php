@@ -16,7 +16,7 @@ final class Feed {
 
 	/**
 	 * Posts to display, newest first: only posts that are shown on the
-	 * website (see Settings → Instagram Feed → Posts on the website).
+	 * website (approved, or new in "show automatically" mode).
 	 *
 	 * @param int  $limit          Maximum number of posts.
 	 * @param bool $include_videos Whether to include videos and reels (shown with their cover image).
@@ -53,26 +53,60 @@ final class Feed {
 	}
 
 	/**
-	 * Number of cached posts and how many of them are shown.
+	 * Number of cached posts, how many of them are shown and how many wait
+	 * for approval.
 	 *
-	 * @return array{total:int,visible:int}
+	 * @return array{total:int,visible:int,awaiting:int}
 	 */
 	public static function counts(): array {
-		$total   = 0;
-		$visible = 0;
-		foreach ( Options::get_feed()['items'] as $item ) {
-			if ( ! is_array( $item ) || empty( $item['id'] ) ) {
-				continue;
-			}
-			++$total;
-			if ( Options::is_visible( (string) $item['id'] ) ) {
-				++$visible;
+		$counts = array(
+			'total'    => 0,
+			'visible'  => 0,
+			'awaiting' => 0,
+		);
+		foreach ( Options::feed_ids() as $id ) {
+			++$counts['total'];
+			if ( Options::is_visible( $id ) ) {
+				++$counts['visible'];
+			} elseif ( Options::is_awaiting( $id ) ) {
+				++$counts['awaiting'];
 			}
 		}
-		return array(
-			'total'   => $total,
-			'visible' => $visible,
-		);
+		return $counts;
+	}
+
+	/**
+	 * Posts that wait for approval, newest first.
+	 *
+	 * @return array
+	 */
+	public static function awaiting_items(): array {
+		$items = array();
+		foreach ( Options::get_feed()['items'] as $item ) {
+			if ( is_array( $item ) && ! empty( $item['id'] ) && Options::is_awaiting( (string) $item['id'] ) ) {
+				$items[] = $item;
+			}
+		}
+		return $items;
+	}
+
+	/**
+	 * One line about a post for lists and emails: the start of the caption,
+	 * else the alt text.
+	 *
+	 * @param array $item   Post.
+	 * @param int   $length Maximum length in characters.
+	 * @return string
+	 */
+	public static function summary( array $item, int $length = 100 ): string {
+		$text = trim( (string) ( $item['caption'] ?? '' ) );
+		$text = '' !== $text ? $text : trim( (string) ( $item['alt'] ?? '' ) );
+		$text = trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
+
+		if ( mb_strlen( $text ) > $length ) {
+			$text = rtrim( mb_substr( $text, 0, $length - 1 ), " \t\n\r\0\x0B.,;:-" ) . '…';
+		}
+		return $text;
 	}
 
 	/**

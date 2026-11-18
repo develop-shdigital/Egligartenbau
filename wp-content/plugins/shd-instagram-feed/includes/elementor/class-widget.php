@@ -15,6 +15,7 @@ use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use Elementor\Plugin as Elementor_Plugin;
 use Elementor\Widget_Base;
+use SHD\InstagramFeed\Connector;
 use SHD\InstagramFeed\Feed;
 use SHD\InstagramFeed\Options;
 use SHD\InstagramFeed\Plugin;
@@ -877,8 +878,8 @@ final class Widget extends Widget_Base {
 				printf(
 					'<div class="elementor-alert elementor-alert-info">%s</div>',
 					Feed::counts()['total']
-						? esc_html__( 'No posts are selected for the website. Tick the posts to show under Settings → Instagram Feed → Posts on the website.', 'shd-instagram-feed' )
-						: esc_html__( 'No Instagram posts yet. Connect your account under Settings → Instagram Feed in the WordPress admin.', 'shd-instagram-feed' )
+						? esc_html__( 'No post is approved for the website yet. Approve posts under Instagram in the WordPress menu.', 'shd-instagram-feed' )
+						: esc_html__( 'No Instagram posts yet. Connect your account under Instagram in the WordPress menu.', 'shd-instagram-feed' )
 				);
 			}
 			return;
@@ -1226,19 +1227,29 @@ final class Widget extends Widget_Base {
 	private function feed_info_html(): string {
 		$connection = Options::get_connection();
 		$counts     = Feed::counts();
-		$url        = admin_url( 'options-general.php?page=shd-instagram-feed' );
+		$url        = Connector::page_url();
 
 		if ( '' === $connection['token'] ) {
 			return esc_html__( 'No Instagram account is connected yet.', 'shd-instagram-feed' ) . ' ' . sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html__( 'Feed settings', 'shd-instagram-feed' ) );
 		}
 
-		return sprintf(
+		$text = sprintf(
 			/* translators: 1: Instagram username, 2: number of posts shown, 3: number of posts. */
 			esc_html__( 'Posts from @%1$s: %2$d of %3$d are shown.', 'shd-instagram-feed' ),
 			esc_html( $connection['username'] ),
 			(int) $counts['visible'],
 			(int) $counts['total']
-		) . ' ' . sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html__( 'Choose posts', 'shd-instagram-feed' ) );
+		);
+
+		if ( $counts['awaiting'] ) {
+			$text .= ' ' . sprintf(
+				/* translators: %d: number of posts. */
+				esc_html( _n( '%d new post is waiting for approval.', '%d new posts are waiting for approval.', $counts['awaiting'], 'shd-instagram-feed' ) ),
+				(int) $counts['awaiting']
+			);
+		}
+
+		return $text . ' ' . sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html__( 'Choose posts', 'shd-instagram-feed' ) );
 	}
 
 	/**

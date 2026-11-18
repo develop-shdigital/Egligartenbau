@@ -41,14 +41,15 @@ final class Connector {
 
 	const REST_NAMESPACE = 'shd-igf/v1';
 
+	/** Slug of the plugin's admin page. */
+	const PAGE = 'shd-instagram-feed';
+
 	const REST_ROUTE = '/oauth';
 
 	const STATE_PREFIX = 'shd_igf_oauth_';
 
 	/** Time to finish the Instagram login (incl. two-factor authentication). */
 	const STATE_TTL = 15 * MINUTE_IN_SECONDS;
-
-	const CAPABILITY = 'manage_options';
 
 	/**
 	 * Route that receives the token from the login service.
@@ -90,7 +91,7 @@ final class Connector {
 	/**
 	 * Address the "Login to Instagram" button leads to.
 	 *
-	 * @param int  $user_id   Administrator who clicks the button.
+	 * @param int  $user_id   User who clicks the button.
 	 * @param bool $reconnect Ask Instagram for a new login, e.g. to switch accounts.
 	 * @return string|WP_Error
 	 */
@@ -133,7 +134,7 @@ final class Connector {
 	 * The login service posts the result of the login here.
 	 *
 	 * @param WP_REST_Request $request Body: `state` plus `access_token` and `expires_in`, or `error`.
-	 * @return WP_REST_Response Redirect to the settings page.
+	 * @return WP_REST_Response Redirect to the plugin's page.
 	 */
 	public static function handle_callback( WP_REST_Request $request ): WP_REST_Response {
 		$params = $request->get_body_params();
@@ -146,7 +147,7 @@ final class Connector {
 			delete_transient( $key ); // Single use.
 		}
 
-		if ( ! is_array( $stored ) || empty( $stored['user_id'] ) || ! user_can( (int) $stored['user_id'], self::CAPABILITY ) ) {
+		if ( ! is_array( $stored ) || empty( $stored['user_id'] ) || ! user_can( (int) $stored['user_id'], Access::CAP ) ) {
 			return self::redirect( 0, 'error', '' );
 		}
 
@@ -176,7 +177,8 @@ final class Connector {
 
 		$expires_in = isset( $params['expires_in'] ) ? absint( $params['expires_in'] ) : 0;
 
-		// Attribute the imported images to the administrator who connected.
+		// Run the first sync as the user who connected: they see the posts on
+		// the page right away, so they get no email about them.
 		wp_set_current_user( $user_id );
 
 		list( $type, $message ) = self::connect( $token, $expires_in ? time() + $expires_in : 0 );
@@ -207,12 +209,20 @@ final class Connector {
 			);
 		}
 
-		$user_id = isset( $profile['user_id'] ) ? $profile['user_id'] : ( isset( $profile['id'] ) ? $profile['id'] : '' );
+		$user_id  = isset( $profile['user_id'] ) ? $profile['user_id'] : ( isset( $profile['id'] ) ? $profile['id'] : '' );
+		$user_id  = preg_replace( '/[^0-9A-Za-z_]/', '', (string) $user_id );
+		$previous = Options::get_connection();
+
+		// Posts of a newly connected account are not announced by email: whoever
+		// connects sees them right away. Only later posts are.
+		if ( $previous['user_id'] !== $user_id || ! Options::get_moderation()['notified'] ) {
+			Options::set_notified( time() );
+		}
 
 		Options::save_connection(
 			array(
 				'token'        => $token,
-				'user_id'      => preg_replace( '/[^0-9A-Za-z_]/', '', (string) $user_id ),
+				'user_id'      => $user_id,
 				'username'     => preg_replace( '/[^A-Za-z0-9._]/', '', isset( $profile['username'] ) ? (string) $profile['username'] : '' ),
 				'account_type' => sanitize_text_field( isset( $profile['account_type'] ) ? (string) $profile['account_type'] : '' ),
 				'connected_at' => time(),
@@ -288,7 +298,7 @@ final class Connector {
 	}
 
 	/**
-	 * Remember a message for the settings page.
+	 * Remember a message for the plugin's page.
 	 *
 	 * @param int    $user_id User who sees the message.
 	 * @param string $type    `success`, `warning` or `error`.
@@ -306,12 +316,12 @@ final class Connector {
 	}
 
 	/**
-	 * Settings page URL.
+	 * Address of the plugin's page (Instagram in the admin menu).
 	 *
 	 * @return string
 	 */
-	public static function settings_url(): string {
-		return admin_url( 'options-general.php?page=shd-instagram-feed' );
+	public static function page_url(): string {
+		return admin_url( 'admin.php?page=' . self::PAGE );
 	}
 
 	/**
@@ -340,7 +350,7 @@ final class Connector {
 	}
 
 	/**
-	 * Send the browser to the settings page (303: the callback is a POST).
+	 * Send the browser to the plugin's page (303: the callback is a POST).
 	 *
 	 * @param int    $user_id User to show the message to; 0 when the state was invalid.
 	 * @param string $type    Notice type.
@@ -348,7 +358,7 @@ final class Connector {
 	 * @return WP_REST_Response
 	 */
 	private static function redirect( int $user_id, string $type, string $message ): WP_REST_Response {
-		$url = self::settings_url();
+		$url = self::page_url();
 
 		if ( $user_id ) {
 			self::notify( $user_id, $type, $message );

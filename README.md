@@ -4,7 +4,7 @@ Custom code for [egligartenbau.com](https://egligartenbau.com/) (WordPress, Elem
 
 ## Contents
 
-- `wp-content/plugins/shd-instagram-feed/` – **SHD Instagram Feed**: an Elementor widget that shows the latest Instagram posts in a fast, accessible slider and updates itself automatically. Sites connect with one "Login to Instagram" button; the same plugin on www.sh-digital.ch provides that login for all sites. Setup and details: [plugin README](wp-content/plugins/shd-instagram-feed/README.md).
+- `wp-content/plugins/shd-instagram-feed/` – **SHD Instagram Feed**: an Elementor widget that shows the latest Instagram posts in a fast, accessible slider and updates itself automatically. New posts appear once they are approved, and an "Instagram Manager" role gives someone access to that and nothing else. Sites connect with one "Login to Instagram" button; the same plugin on www.sh-digital.ch provides that login for all sites. Setup and details: [plugin README](wp-content/plugins/shd-instagram-feed/README.md).
 - `scripts/build-plugin.sh` – builds an installable zip of the plugin into `dist/`.
 - `.claude/skills/` and `skills-lock.json` – agent skills used for development (installed with `npx skills`, update with `npx skills update`).
 

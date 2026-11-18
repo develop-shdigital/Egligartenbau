@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: SHD Instagram Feed 0.5.0\n"
+"Project-Id-Version: SHD Instagram Feed 0.6.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/shd-instagram-feed\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T13:24:25+00:00\n"
+"POT-Creation-Date: 2026-11-18T16:56:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: shd-instagram-feed\n"
@@ -27,7 +27,7 @@ msgstr ""
 
 #. Description of the plugin
 #: shd-instagram-feed.php
-msgid "Shows your latest Instagram posts in a fast, accessible slider with an Elementor widget. Posts and images are synced in the background and stored locally, so visitors never load anything from Instagram."
+msgid "Shows your latest Instagram posts in a fast, accessible slider with an Elementor widget. New posts appear on the website once they are approved. Posts and images are synced in the background and stored locally, so visitors never load anything from Instagram."
 msgstr ""
 
 #. Author of the plugin
@@ -35,284 +35,457 @@ msgstr ""
 msgid "SH Digital"
 msgstr ""
 
-#: includes/class-admin.php:46
-#: includes/class-admin.php:47
-#: includes/class-admin.php:376
-#: includes/elementor/class-widget.php:62
+#: includes/class-admin.php:53
+#: includes/class-admin.php:948
+msgid "Instagram"
+msgstr ""
+
+#. translators: %s: number of posts.
+#: includes/class-admin.php:63
+#, php-format
+msgid "%s post waiting for approval"
+msgid_plural "%s posts waiting for approval"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-admin.php:71
+#: includes/class-admin.php:434
+#: includes/elementor/class-widget.php:63
 msgid "Instagram Feed"
 msgstr ""
 
-#: includes/class-admin.php:69
-#: includes/class-admin.php:671
+#: includes/class-admin.php:130
+#: includes/class-admin.php:826
 msgid "Settings"
 msgstr ""
 
-#: includes/class-admin.php:93
-msgid "Posts to keep"
-msgstr ""
-
-#: includes/class-admin.php:102
-msgid "Check for new posts"
-msgstr ""
-
-#: includes/class-admin.php:120
-msgid "The newest posts are kept with their images; older images are deleted automatically. When only ticked posts are shown, ticked posts are kept in addition."
-msgstr ""
-
-#: includes/class-admin.php:130
-msgid "Every hour"
-msgstr ""
-
-#: includes/class-admin.php:131
-msgid "Twice a day"
-msgstr ""
-
-#: includes/class-admin.php:132
-msgid "Once a day"
-msgstr ""
-
-#: includes/class-admin.php:182
+#: includes/class-admin.php:175
 msgid "Please paste an access token."
 msgstr ""
 
-#: includes/class-admin.php:200
+#: includes/class-admin.php:193
 msgid "Disconnected. The cached posts and images were deleted."
 msgstr ""
 
-#: includes/class-admin.php:203
+#: includes/class-admin.php:196
 msgid "Disconnected. The widget keeps showing the cached posts until you connect again."
 msgstr ""
 
-#. translators: 1: number of posts shown, 2: number of posts.
+#: includes/class-admin.php:232
+msgid "This post is no longer in the feed. Nothing was changed."
+msgstr ""
+
+#: includes/class-admin.php:240
+msgid "Approved. The post is now shown on the website."
+msgstr ""
+
+#. translators: %d: number of posts.
 #: includes/class-admin.php:243
+#, php-format
+msgid "%d post approved. It is now shown on the website."
+msgid_plural "%d posts approved. They are now shown on the website."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-admin.php:250
+msgid "Done. The post is not shown on the website. You can still show it under “Posts on the website”."
+msgstr ""
+
+#. translators: 1: number of posts shown, 2: number of posts.
+#: includes/class-admin.php:275
 #, php-format
 msgid "Saved. %1$d of %2$d post is shown on the website."
 msgid_plural "Saved. %1$d of %2$d posts are shown on the website."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin.php:279
+#: includes/class-admin.php:305
+msgid "Settings saved."
+msgstr ""
+
+#: includes/class-admin.php:337
 msgid "You are not allowed to manage the Instagram feed."
 msgstr ""
 
-#: includes/class-admin.php:312
+#: includes/class-admin.php:370
 msgid "Instagram Feed:"
 msgstr ""
 
-#: includes/class-admin.php:315
+#: includes/class-admin.php:373
 msgid "Open settings"
 msgstr ""
 
 #. translators: %s: error message from Instagram.
-#: includes/class-admin.php:333
+#: includes/class-admin.php:391
 #, php-format
 msgid "Instagram no longer accepts the access token (%s). Click “Login to Instagram” again. Until then the site keeps showing the last synced posts."
 msgstr ""
 
 #. translators: %s: date.
-#: includes/class-admin.php:341
+#: includes/class-admin.php:399
 #, php-format
 msgid "The access token expires on %s and could not be renewed automatically. Click “Login to Instagram” again."
 msgstr ""
 
 #. translators: 1: date, 2: error message.
-#: includes/class-admin.php:350
+#: includes/class-admin.php:408
 #, php-format
 msgid "The feed has not updated since %1$s. Last error: %2$s"
 msgstr ""
 
-#: includes/class-admin.php:386
+#: includes/class-admin.php:444
 msgid "The Instagram login link has expired or was already used. Please click “Login to Instagram” again."
 msgstr ""
 
-#: includes/class-admin.php:448
-msgid "Instagram account"
-msgstr ""
-
-#: includes/class-admin.php:452
-msgid "Account"
-msgstr ""
-
-#: includes/class-admin.php:459
-#: includes/class-admin.php:505
-msgid "Access token"
-msgstr ""
-
-#: includes/class-admin.php:463
-msgid "Not valid any more"
-msgstr ""
-
-#. translators: %s: date.
-#: includes/class-admin.php:467
-#, php-format
-msgid "Valid until %s, renewed automatically every week"
-msgstr ""
-
-#: includes/class-admin.php:475
-msgid "Connect the Instagram account whose posts should appear on the website."
-msgstr ""
-
-#: includes/class-admin.php:485
-msgid "Login to Instagram again"
-msgstr ""
-
-#: includes/class-admin.php:485
-msgid "Login to Instagram"
-msgstr ""
-
-#: includes/class-admin.php:492
-msgid "Disconnect"
-msgstr ""
-
-#: includes/class-admin.php:493
-msgid "Also delete the cached posts and images"
-msgstr ""
-
-#: includes/class-admin.php:499
-msgid "Advanced: connect with an access token"
-msgstr ""
-
-#: includes/class-admin.php:500
-msgid "Only needed if the login button cannot be used. Generate a token in the Meta App Dashboard (Instagram → “API setup with Instagram business login” → “Generate token”) and paste it here."
-msgstr ""
-
-#: includes/class-admin.php:508
-msgid "Connect with token"
+#: includes/class-admin.php:523
+#: includes/class-admin.php:776
+msgid "Waiting for approval"
 msgstr ""
 
 #: includes/class-admin.php:526
-msgid "Instagram login service"
-msgstr ""
-
-#: includes/class-admin.php:527
-msgid "This website provides the “Login to Instagram” button for all websites that use the plugin, because the Instagram app ID and secret are defined in its wp-config.php."
-msgstr ""
-
-#: includes/class-admin.php:529
-msgid "OAuth redirect URI"
-msgstr ""
-
-#: includes/class-admin.php:532
-msgid "Enter exactly this address in the Meta app under Instagram → “API setup with Instagram business login” → “Business login settings” → “OAuth redirect URIs”."
-msgstr ""
-
-#: includes/class-admin.php:534
-msgid "Allowed websites"
-msgstr ""
-
-#: includes/class-admin.php:535
-msgid "All websites that use the plugin (https)"
-msgstr ""
-
-#: includes/class-admin.php:551
-#: includes/elementor/class-widget.php:130
-msgid "Feed"
-msgstr ""
-
-#: includes/class-admin.php:553
-msgid "Cached posts"
-msgstr ""
-
-#: includes/class-admin.php:555
-msgid "Shown on the website"
-msgstr ""
-
-#: includes/class-admin.php:557
-msgid "Last update"
-msgstr ""
-
-#: includes/class-admin.php:558
-msgid "Never"
-msgstr ""
-
-#: includes/class-admin.php:559
-msgid "Next check"
-msgstr ""
-
-#: includes/class-admin.php:560
-msgid "Not scheduled"
-msgstr ""
-
-#: includes/class-admin.php:562
-msgid "Waiting"
-msgstr ""
-
-#. translators: %d: number of images.
-#: includes/class-admin.php:566
-#, php-format
-msgid "%d image is being imported in the background"
-msgid_plural "%d images are being imported in the background"
+msgid "This post is new on Instagram. It only appears on the website after you approve it."
+msgid_plural "These posts are new on Instagram. They only appear on the website after you approve them."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin.php:571
-msgid "Last error"
+#: includes/class-admin.php:546
+#: includes/class-admin.php:623
+msgid "View on Instagram"
 msgstr ""
 
-#: includes/class-admin.php:580
-msgid "Check for new posts now"
+#: includes/class-admin.php:548
+msgid "Approve"
 msgstr ""
 
-#: includes/class-admin.php:583
-msgid "Then add the “Instagram Feed” widget to a page in Elementor."
+#: includes/class-admin.php:549
+msgid "Don’t show"
 msgstr ""
 
-#: includes/class-admin.php:600
-msgid "Video"
-msgstr ""
+#. translators: %d: number of posts (always more than one).
+#: includes/class-admin.php:560
+#, php-format
+msgid "Approve %d post"
+msgid_plural "Approve all %d posts"
+msgstr[0] ""
+msgstr[1] ""
 
-#: includes/class-admin.php:601
-msgid "Album"
-msgstr ""
-
-#: includes/class-admin.php:605
+#: includes/class-admin.php:588
 msgid "Posts on the website"
 msgstr ""
 
+#: includes/class-admin.php:591
+msgid "No post is approved yet. Approve the posts that should appear on the website above."
+msgstr ""
+
 #. translators: 1: number of posts shown, 2: number of posts.
-#: includes/class-admin.php:610
+#: includes/class-admin.php:597
 #, php-format
 msgid "Ticked posts appear in the Instagram Feed widget. %1$d of %2$d post is shown."
 msgid_plural "Ticked posts appear in the Instagram Feed widget. %1$d of %2$d posts are shown."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin.php:621
-msgid "New posts from Instagram"
-msgstr ""
-
-#: includes/class-admin.php:624
-msgid "Show automatically. You only untick the posts you don’t want."
-msgstr ""
-
-#: includes/class-admin.php:628
-msgid "Only show them once you tick them. Ticked posts stay on the website even when they get older."
-msgstr ""
-
-#: includes/class-admin.php:633
+#: includes/class-admin.php:608
 msgid "Tick all"
 msgstr ""
 
-#: includes/class-admin.php:635
+#: includes/class-admin.php:610
 msgid "Untick all"
 msgstr ""
 
-#: includes/class-admin.php:654
-msgid "View on Instagram"
-msgstr ""
-
-#: includes/class-admin.php:659
+#: includes/class-admin.php:628
 msgid "Save selection"
 msgstr ""
 
-#. translators: %s: time span, e.g. "5 mins".
+#: includes/class-admin.php:643
+msgid "Video"
+msgstr ""
+
+#: includes/class-admin.php:644
+msgid "Album"
+msgstr ""
+
+#: includes/class-admin.php:666
+msgid "Instagram account"
+msgstr ""
+
+#: includes/class-admin.php:670
+msgid "Account"
+msgstr ""
+
+#: includes/class-admin.php:677
+#: includes/class-admin.php:723
+msgid "Access token"
+msgstr ""
+
+#: includes/class-admin.php:681
+msgid "Not valid any more"
+msgstr ""
+
+#. translators: %s: date.
+#: includes/class-admin.php:685
+#, php-format
+msgid "Valid until %s, renewed automatically every week"
+msgstr ""
+
 #: includes/class-admin.php:693
+msgid "Connect the Instagram account whose posts should appear on the website."
+msgstr ""
+
+#: includes/class-admin.php:703
+msgid "Login to Instagram again"
+msgstr ""
+
+#: includes/class-admin.php:703
+msgid "Login to Instagram"
+msgstr ""
+
+#: includes/class-admin.php:710
+msgid "Disconnect"
+msgstr ""
+
+#: includes/class-admin.php:711
+msgid "Also delete the cached posts and images"
+msgstr ""
+
+#: includes/class-admin.php:717
+msgid "Advanced: connect with an access token"
+msgstr ""
+
+#: includes/class-admin.php:718
+msgid "Only needed if the login button cannot be used. Generate a token in the Meta App Dashboard (Instagram → “API setup with Instagram business login” → “Generate token”) and paste it here."
+msgstr ""
+
+#: includes/class-admin.php:726
+msgid "Connect with token"
+msgstr ""
+
+#: includes/class-admin.php:744
+msgid "Instagram login service"
+msgstr ""
+
+#: includes/class-admin.php:745
+msgid "This website provides the “Login to Instagram” button for all websites that use the plugin, because the Instagram app ID and secret are defined in its wp-config.php."
+msgstr ""
+
+#: includes/class-admin.php:747
+msgid "OAuth redirect URI"
+msgstr ""
+
+#: includes/class-admin.php:750
+msgid "Enter exactly this address in the Meta app under Instagram → “API setup with Instagram business login” → “Business login settings” → “OAuth redirect URIs”."
+msgstr ""
+
+#: includes/class-admin.php:752
+msgid "Allowed websites"
+msgstr ""
+
+#: includes/class-admin.php:753
+msgid "All websites that use the plugin (https)"
+msgstr ""
+
+#: includes/class-admin.php:769
+#: includes/elementor/class-widget.php:131
+msgid "Feed"
+msgstr ""
+
+#: includes/class-admin.php:771
+msgid "Cached posts"
+msgstr ""
+
+#: includes/class-admin.php:773
+msgid "Shown on the website"
+msgstr ""
+
+#: includes/class-admin.php:779
+msgid "Last update"
+msgstr ""
+
+#: includes/class-admin.php:780
+msgid "Never"
+msgstr ""
+
+#: includes/class-admin.php:781
+msgid "Next check"
+msgstr ""
+
+#: includes/class-admin.php:782
+msgid "Not scheduled"
+msgstr ""
+
+#: includes/class-admin.php:784
+msgid "Images"
+msgstr ""
+
+#. translators: %d: number of images.
+#: includes/class-admin.php:788
+#, php-format
+msgid "%d image is being imported in the background"
+msgid_plural "%d images are being imported in the background"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-admin.php:793
+msgid "Last error"
+msgstr ""
+
+#: includes/class-admin.php:802
+msgid "Check for new posts now"
+msgstr ""
+
+#: includes/class-admin.php:806
+msgid "Then add the “Instagram Feed” widget to a page in Elementor."
+msgstr ""
+
+#: includes/class-admin.php:820
+msgid "Every hour"
+msgstr ""
+
+#: includes/class-admin.php:821
+msgid "Twice a day"
+msgstr ""
+
+#: includes/class-admin.php:822
+msgid "Once a day"
+msgstr ""
+
+#: includes/class-admin.php:833
+#: includes/class-admin.php:836
+msgid "New posts from Instagram"
+msgstr ""
+
+#: includes/class-admin.php:839
+msgid "Wait for approval (recommended)"
+msgstr ""
+
+#: includes/class-admin.php:841
+msgid "New posts only appear on the website after someone approves them on this page. Approved posts stay on the website even when they get older."
+msgstr ""
+
+#: includes/class-admin.php:844
+msgid "Show automatically"
+msgstr ""
+
+#: includes/class-admin.php:846
+msgid "New posts appear on the website right away. You can still hide single posts."
+msgstr ""
+
+#: includes/class-admin.php:851
+msgid "Email"
+msgstr ""
+
+#: includes/class-admin.php:855
+msgid "Email me when new posts are waiting"
+msgstr ""
+
+#. translators: %s: email address.
+#: includes/class-admin.php:861
+#, php-format
+msgid "Sent to %s when new posts are waiting for approval. This setting only applies to you."
+msgstr ""
+
+#: includes/class-admin.php:869
+msgid "Posts to keep"
+msgstr ""
+
+#: includes/class-admin.php:872
+msgid "The newest posts are kept with their images; older images are deleted automatically. Approved posts are kept in addition."
+msgstr ""
+
+#: includes/class-admin.php:876
+msgid "Check for new posts"
+msgstr ""
+
+#: includes/class-admin.php:887
+msgid "Save settings"
+msgstr ""
+
+#: includes/class-admin.php:909
+msgid "Who can manage Instagram"
+msgstr ""
+
+#: includes/class-admin.php:910
+msgid "Administrators, and users with the role “Instagram Manager”. Instagram managers only see this page and their own profile, nothing else of the website. They approve new posts, can log in to Instagram and get an email when new posts are waiting."
+msgstr ""
+
+#: includes/class-admin.php:923
+msgid "gets emails"
+msgstr ""
+
+#: includes/class-admin.php:923
+msgid "no emails"
+msgstr ""
+
+#: includes/class-admin.php:928
+msgid "Nobody has this role yet."
+msgstr ""
+
+#: includes/class-admin.php:933
+msgid "Add user"
+msgstr ""
+
+#: includes/class-admin.php:934
+msgid "Choose the role “Instagram Manager”. For an existing user, change the role under Users."
+msgstr ""
+
+#: includes/class-admin.php:962
+#: includes/elementor/class-widget.php:1233
+msgid "No Instagram account is connected yet."
+msgstr ""
+
+#: includes/class-admin.php:963
+msgid "Connect Instagram"
+msgstr ""
+
+#. translators: %d: number of posts.
+#: includes/class-admin.php:981
+#: includes/elementor/class-widget.php:1247
+#, php-format
+msgid "%d new post is waiting for approval."
+msgid_plural "%d new posts are waiting for approval."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-admin.php:984
+msgid "It appears on the website once it is approved."
+msgid_plural "They appear on the website once they are approved."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-admin.php:991
+msgid "Review posts"
+msgstr ""
+
+#: includes/class-admin.php:993
+msgid "No new posts are waiting for approval."
+msgstr ""
+
+#. translators: %d: number of posts.
+#: includes/class-admin.php:1001
+#, php-format
+msgid "%d post on the website"
+msgid_plural "%d posts on the website"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: e.g. "5 mins ago".
+#: includes/class-admin.php:1010
+#, php-format
+msgid "last update %s"
+msgstr ""
+
+#: includes/class-admin.php:1014
+msgid "Manage"
+msgstr ""
+
+#. translators: %s: time span, e.g. "5 mins".
+#: includes/class-admin.php:1029
 #, php-format
 msgid "in %s"
 msgstr ""
 
 #. translators: %s: time span, e.g. "5 mins".
-#: includes/class-admin.php:695
+#: includes/class-admin.php:1031
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -332,7 +505,7 @@ msgid "Instagram sent an unexpected response (HTTP %d)."
 msgstr ""
 
 #: includes/class-connect-service.php:115
-msgid "This login link is not valid or this website may not use it. Please start again in WordPress under Settings → Instagram Feed."
+msgid "This login link is not valid or this website may not use it. Please start again with the “Login to Instagram” button in WordPress."
 msgstr ""
 
 #: includes/class-connect-service.php:366
@@ -347,44 +520,44 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
-#: includes/class-connector.php:100
+#: includes/class-connector.php:101
 msgid "The Instagram login is not available: no login service is configured."
 msgstr ""
 
-#: includes/class-connector.php:158
+#: includes/class-connector.php:159
 msgid "The Instagram login was cancelled. Nothing was changed."
 msgstr ""
 
 #. translators: %s: error message from Instagram.
-#: includes/class-connector.php:166
+#: includes/class-connector.php:167
 #, php-format
 msgid "Instagram login failed: %s"
 msgstr ""
 
-#: includes/class-connector.php:174
+#: includes/class-connector.php:175
 msgid "Instagram did not return an access token. Please try again."
 msgstr ""
 
 #. translators: %s: error message from Instagram.
-#: includes/class-connector.php:204
+#: includes/class-connector.php:206
 #, php-format
 msgid "Instagram did not accept this token: %s"
 msgstr ""
 
 #. translators: %s: Instagram username.
-#: includes/class-connector.php:230
+#: includes/class-connector.php:240
 #, php-format
 msgid "Connected to @%s."
 msgstr ""
 
 #. translators: %s: error message.
-#: includes/class-connector.php:251
+#: includes/class-connector.php:261
 #, php-format
 msgid "Sync failed: %s"
 msgstr ""
 
 #. translators: %d: number of posts.
-#: includes/class-connector.php:260
+#: includes/class-connector.php:270
 #, php-format
 msgid "%d post is up to date."
 msgid_plural "%d posts are up to date."
@@ -392,7 +565,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of images.
-#: includes/class-connector.php:268
+#: includes/class-connector.php:278
 #, php-format
 msgid "%d new image imported."
 msgid_plural "%d new images imported."
@@ -400,7 +573,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of images.
-#: includes/class-connector.php:275
+#: includes/class-connector.php:285
 #, php-format
 msgid "%d more image will be imported in the background within a few minutes."
 msgid_plural "%d more images will be imported in the background within a few minutes."
@@ -408,7 +581,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of images.
-#: includes/class-connector.php:282
+#: includes/class-connector.php:292
 #, php-format
 msgid "%d image could not be imported and will be retried."
 msgid_plural "%d images could not be imported and will be retried."
@@ -420,16 +593,50 @@ msgid "The downloaded file is not a supported image."
 msgstr ""
 
 #. translators: %s: date.
-#: includes/class-importer.php:195
-#: includes/elementor/class-widget.php:1066
+#: includes/class-importer.php:198
+#: includes/elementor/class-widget.php:1067
 #, php-format
 msgid "Instagram post from %s"
 msgstr ""
 
-#: includes/class-importer.php:196
-#: includes/elementor/class-widget.php:1073
+#: includes/class-importer.php:199
+#: includes/elementor/class-widget.php:1074
 msgid "Instagram post"
 msgstr ""
+
+#. translators: %s: name of the recipient.
+#: includes/class-notifier.php:137
+#, php-format
+msgid "Hello %s,"
+msgstr ""
+
+#. translators: 1: number of posts, 2: Instagram username.
+#: includes/class-notifier.php:141
+#, php-format
+msgid "%1$d new post from @%2$s is waiting for your approval. It only appears on the website after you approve it."
+msgid_plural "%1$d new posts from @%2$s are waiting for your approval. They only appear on the website after you approve them."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-notifier.php:160
+msgid "Approve or hide it here:"
+msgid_plural "Approve or hide them here:"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: website name.
+#: includes/class-notifier.php:166
+#, php-format
+msgid "You get this email because you manage Instagram on %s. To stop it, untick “Email me when new posts are waiting” on the page above."
+msgstr ""
+
+#. translators: 1: website name, 2: number of posts.
+#: includes/class-notifier.php:172
+#, php-format
+msgid "[%1$s] %2$d new Instagram post is waiting for approval"
+msgid_plural "[%1$s] %2$d new Instagram posts are waiting for approval"
+msgstr[0] ""
+msgstr[1] ""
 
 #: includes/class-sync.php:80
 msgid "No Instagram account is connected."
@@ -440,364 +647,360 @@ msgid "A sync is already running. Try again in a few minutes."
 msgstr ""
 
 #. translators: %s: error message.
-#: includes/class-sync.php:181
+#: includes/class-sync.php:186
 #, php-format
 msgid "An image could not be imported: %s"
 msgstr ""
 
-#: includes/elementor/class-widget.php:149
+#: includes/elementor/class-widget.php:150
 msgid "Number of posts"
 msgstr ""
 
-#: includes/elementor/class-widget.php:161
+#: includes/elementor/class-widget.php:162
 msgid "Videos and reels"
 msgstr ""
 
-#: includes/elementor/class-widget.php:162
+#: includes/elementor/class-widget.php:163
 msgid "Shown with their cover image."
 msgstr ""
 
-#: includes/elementor/class-widget.php:164
+#: includes/elementor/class-widget.php:165
 msgid "Show"
 msgstr ""
 
-#: includes/elementor/class-widget.php:165
+#: includes/elementor/class-widget.php:166
 msgid "Hide"
 msgstr ""
 
-#: includes/elementor/class-widget.php:174
+#: includes/elementor/class-widget.php:175
 msgid "Link to Instagram"
 msgstr ""
 
-#: includes/elementor/class-widget.php:184
-#: includes/elementor/class-widget.php:448
+#: includes/elementor/class-widget.php:185
+#: includes/elementor/class-widget.php:449
 msgid "Video and album icon"
 msgstr ""
 
-#: includes/elementor/class-widget.php:194
+#: includes/elementor/class-widget.php:195
 msgid "Image format"
 msgstr ""
 
-#: includes/elementor/class-widget.php:198
+#: includes/elementor/class-widget.php:199
 msgid "Square (1:1)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:199
+#: includes/elementor/class-widget.php:200
 msgid "Portrait (4:5)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:200
+#: includes/elementor/class-widget.php:201
 msgid "Portrait (3:4)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:201
+#: includes/elementor/class-widget.php:202
 msgid "Landscape (16:9)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:202
+#: includes/elementor/class-widget.php:203
 msgid "Original"
 msgstr ""
 
-#: includes/elementor/class-widget.php:214
+#: includes/elementor/class-widget.php:215
 msgid "Lazy-load images"
 msgstr ""
 
-#: includes/elementor/class-widget.php:215
+#: includes/elementor/class-widget.php:216
 msgid "Keep on when the feed is further down the page. Turn off if it is visible without scrolling."
 msgstr ""
 
-#: includes/elementor/class-widget.php:232
+#: includes/elementor/class-widget.php:233
 msgid "Slider"
 msgstr ""
 
-#: includes/elementor/class-widget.php:240
+#: includes/elementor/class-widget.php:241
 msgid "Posts visible"
 msgstr ""
 
-#: includes/elementor/class-widget.php:257
+#: includes/elementor/class-widget.php:258
 msgid "Gap"
 msgstr ""
 
-#: includes/elementor/class-widget.php:284
+#: includes/elementor/class-widget.php:285
 msgid "Arrows move by"
 msgstr ""
 
-#: includes/elementor/class-widget.php:288
+#: includes/elementor/class-widget.php:289
 msgid "One post"
 msgstr ""
 
-#: includes/elementor/class-widget.php:289
+#: includes/elementor/class-widget.php:290
 msgid "All visible posts"
 msgstr ""
 
-#: includes/elementor/class-widget.php:297
+#: includes/elementor/class-widget.php:298
 msgid "Loop"
 msgstr ""
 
-#: includes/elementor/class-widget.php:298
+#: includes/elementor/class-widget.php:299
 msgid "After the last post, continue with the first."
 msgstr ""
 
-#: includes/elementor/class-widget.php:308
+#: includes/elementor/class-widget.php:309
 msgid "Transition duration (ms)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:320
+#: includes/elementor/class-widget.php:321
 msgid "Autoplay"
 msgstr ""
 
-#: includes/elementor/class-widget.php:331
+#: includes/elementor/class-widget.php:332
 msgid "Time per step (ms)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:344
+#: includes/elementor/class-widget.php:345
 msgid "Pause on hover"
 msgstr ""
 
-#: includes/elementor/class-widget.php:355
+#: includes/elementor/class-widget.php:356
 msgid "Pause button"
 msgstr ""
 
-#: includes/elementor/class-widget.php:356
+#: includes/elementor/class-widget.php:357
 msgid "Recommended: lets visitors stop the movement (WCAG 2.2.2). Autoplay never runs for visitors who have reduced motion turned on."
 msgstr ""
 
-#: includes/elementor/class-widget.php:367
-#: includes/elementor/class-widget.php:494
+#: includes/elementor/class-widget.php:368
+#: includes/elementor/class-widget.php:495
 msgid "Arrows"
 msgstr ""
 
-#: includes/elementor/class-widget.php:378
+#: includes/elementor/class-widget.php:379
 msgid "Arrow position"
 msgstr ""
 
-#: includes/elementor/class-widget.php:382
+#: includes/elementor/class-widget.php:383
 msgid "On the images"
 msgstr ""
 
-#: includes/elementor/class-widget.php:383
+#: includes/elementor/class-widget.php:384
 msgid "Next to the images"
 msgstr ""
 
-#: includes/elementor/class-widget.php:392
+#: includes/elementor/class-widget.php:393
 msgid "Position indicator"
 msgstr ""
 
-#: includes/elementor/class-widget.php:393
+#: includes/elementor/class-widget.php:394
 msgid "Dots switch to a counter when there are more than 15 positions."
 msgstr ""
 
-#: includes/elementor/class-widget.php:397
+#: includes/elementor/class-widget.php:398
 msgid "Dots"
 msgstr ""
 
-#: includes/elementor/class-widget.php:398
+#: includes/elementor/class-widget.php:399
 msgid "Counter (3 / 12)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:399
+#: includes/elementor/class-widget.php:400
 msgid "Progress bar"
 msgstr ""
 
-#: includes/elementor/class-widget.php:400
+#: includes/elementor/class-widget.php:401
 msgid "None"
 msgstr ""
 
-#: includes/elementor/class-widget.php:415
+#: includes/elementor/class-widget.php:416
 msgid "Posts"
 msgstr ""
 
-#: includes/elementor/class-widget.php:423
-#: includes/elementor/class-widget.php:600
+#: includes/elementor/class-widget.php:424
+#: includes/elementor/class-widget.php:601
 msgid "Corner radius"
 msgstr ""
 
-#: includes/elementor/class-widget.php:435
+#: includes/elementor/class-widget.php:436
 msgid "Zoom on hover"
 msgstr ""
 
-#: includes/elementor/class-widget.php:461
+#: includes/elementor/class-widget.php:462
 msgid "Video and album icon background"
 msgstr ""
 
-#: includes/elementor/class-widget.php:474
+#: includes/elementor/class-widget.php:475
 msgid "Keyboard focus outline"
 msgstr ""
 
-#: includes/elementor/class-widget.php:475
+#: includes/elementor/class-widget.php:476
 msgid "Visible when visitors navigate with the keyboard."
 msgstr ""
 
-#: includes/elementor/class-widget.php:503
+#: includes/elementor/class-widget.php:504
 msgid "Button size"
 msgstr ""
 
-#: includes/elementor/class-widget.php:504
+#: includes/elementor/class-widget.php:505
 msgid "At least 44 px is recommended for touch screens."
 msgstr ""
 
-#: includes/elementor/class-widget.php:530
+#: includes/elementor/class-widget.php:531
 msgid "Icon size"
 msgstr ""
 
-#: includes/elementor/class-widget.php:556
+#: includes/elementor/class-widget.php:557
 msgid "Distance from edge"
 msgstr ""
 
-#: includes/elementor/class-widget.php:578
+#: includes/elementor/class-widget.php:579
 msgid "Vertical position"
 msgstr ""
 
-#: includes/elementor/class-widget.php:627
+#: includes/elementor/class-widget.php:628
 msgid "Normal"
 msgstr ""
 
-#: includes/elementor/class-widget.php:633
-#: includes/elementor/class-widget.php:664
+#: includes/elementor/class-widget.php:634
+#: includes/elementor/class-widget.php:665
 msgid "Icon color"
 msgstr ""
 
-#: includes/elementor/class-widget.php:645
-#: includes/elementor/class-widget.php:676
+#: includes/elementor/class-widget.php:646
+#: includes/elementor/class-widget.php:677
 msgid "Background"
 msgstr ""
 
-#: includes/elementor/class-widget.php:658
+#: includes/elementor/class-widget.php:659
 msgid "Hover"
 msgstr ""
 
-#: includes/elementor/class-widget.php:699
+#: includes/elementor/class-widget.php:700
 msgid "Position indicator and pause button"
 msgstr ""
 
-#: includes/elementor/class-widget.php:729
+#: includes/elementor/class-widget.php:730
 msgid "Space above"
 msgstr ""
 
-#: includes/elementor/class-widget.php:751
+#: includes/elementor/class-widget.php:752
 msgid "Alignment"
 msgstr ""
 
-#: includes/elementor/class-widget.php:755
+#: includes/elementor/class-widget.php:756
 msgid "Left"
 msgstr ""
 
-#: includes/elementor/class-widget.php:759
+#: includes/elementor/class-widget.php:760
 msgid "Center"
 msgstr ""
 
-#: includes/elementor/class-widget.php:763
+#: includes/elementor/class-widget.php:764
 msgid "Right"
 msgstr ""
 
-#: includes/elementor/class-widget.php:782
+#: includes/elementor/class-widget.php:783
 msgid "Dot size"
 msgstr ""
 
-#: includes/elementor/class-widget.php:805
+#: includes/elementor/class-widget.php:806
 msgid "Color"
 msgstr ""
 
-#: includes/elementor/class-widget.php:818
+#: includes/elementor/class-widget.php:819
 msgid "Active color"
 msgstr ""
 
-#: includes/elementor/class-widget.php:819
+#: includes/elementor/class-widget.php:820
 msgid "Also used for the progress bar and the pause button."
 msgstr ""
 
-#: includes/elementor/class-widget.php:831
+#: includes/elementor/class-widget.php:832
 msgid "Track color"
 msgstr ""
 
-#: includes/elementor/class-widget.php:844
+#: includes/elementor/class-widget.php:845
 msgid "Counter color"
 msgstr ""
 
-#: includes/elementor/class-widget.php:880
-msgid "No posts are selected for the website. Tick the posts to show under Settings → Instagram Feed → Posts on the website."
+#: includes/elementor/class-widget.php:881
+msgid "No post is approved for the website yet. Approve posts under Instagram in the WordPress menu."
 msgstr ""
 
-#: includes/elementor/class-widget.php:881
-msgid "No Instagram posts yet. Connect your account under Settings → Instagram Feed in the WordPress admin."
+#: includes/elementor/class-widget.php:882
+msgid "No Instagram posts yet. Connect your account under Instagram in the WordPress menu."
 msgstr ""
 
 #. translators: %d: position number.
-#: includes/elementor/class-widget.php:911
+#: includes/elementor/class-widget.php:912
 #, php-format
 msgid "Show position %d"
 msgstr ""
 
-#: includes/elementor/class-widget.php:912
+#: includes/elementor/class-widget.php:913
 msgid "Pause automatic scrolling"
 msgstr ""
 
-#: includes/elementor/class-widget.php:913
+#: includes/elementor/class-widget.php:914
 msgid "Start automatic scrolling"
 msgstr ""
 
-#: includes/elementor/class-widget.php:921
+#: includes/elementor/class-widget.php:922
 msgid "carousel"
 msgstr ""
 
 #. translators: %s: Instagram username.
-#: includes/elementor/class-widget.php:924
+#: includes/elementor/class-widget.php:925
 #, php-format
 msgid "Instagram posts by @%s"
 msgstr ""
 
-#: includes/elementor/class-widget.php:925
+#: includes/elementor/class-widget.php:926
 msgid "Instagram posts"
 msgstr ""
 
-#: includes/elementor/class-widget.php:941
+#: includes/elementor/class-widget.php:942
 msgid "Previous posts"
 msgstr ""
 
-#: includes/elementor/class-widget.php:944
+#: includes/elementor/class-widget.php:945
 msgid "Next posts"
 msgstr ""
 
-#: includes/elementor/class-widget.php:1037
+#: includes/elementor/class-widget.php:1038
 msgid "slide"
 msgstr ""
 
 #. translators: 1: position, 2: total.
-#: includes/elementor/class-widget.php:1037
+#: includes/elementor/class-widget.php:1038
 #, php-format
 msgid "%1$d of %2$d"
 msgstr ""
 
 #. translators: %s: date.
-#: includes/elementor/class-widget.php:1068
+#: includes/elementor/class-widget.php:1069
 #, php-format
 msgid "Instagram video from %s"
 msgstr ""
 
 #. translators: %s: date.
-#: includes/elementor/class-widget.php:1070
+#: includes/elementor/class-widget.php:1071
 #, php-format
 msgid "Instagram album from %s"
 msgstr ""
 
-#: includes/elementor/class-widget.php:1075
+#: includes/elementor/class-widget.php:1076
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: includes/elementor/class-widget.php:1232
-msgid "No Instagram account is connected yet."
-msgstr ""
-
-#: includes/elementor/class-widget.php:1232
+#: includes/elementor/class-widget.php:1233
 msgid "Feed settings"
 msgstr ""
 
 #. translators: 1: Instagram username, 2: number of posts shown, 3: number of posts.
-#: includes/elementor/class-widget.php:1237
+#: includes/elementor/class-widget.php:1238
 #, php-format
 msgid "Posts from @%1$s: %2$d of %3$d are shown."
 msgstr ""
 
-#: includes/elementor/class-widget.php:1241
+#: includes/elementor/class-widget.php:1252
 msgid "Choose posts"
 msgstr ""

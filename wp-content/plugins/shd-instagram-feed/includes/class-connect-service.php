@@ -112,7 +112,7 @@ final class Connect_Service {
 		$return = self::return_url( $state );
 
 		if ( '' === $return ) {
-			self::message_page( 400, __( 'This login link is not valid or this website may not use it. Please start again in WordPress under Settings → Instagram Feed.', 'shd-instagram-feed' ) );
+			self::message_page( 400, __( 'This login link is not valid or this website may not use it. Please start again with the “Login to Instagram” button in WordPress.', 'shd-instagram-feed' ) );
 		}
 
 		// Step 1: send the browser to Instagram's login.

@@ -1,8 +1,9 @@
 <?php
 /**
- * Uninstall: remove the plugin's options, scheduled events and the images it
- * imported. Images uploaded by people are never touched: only attachments
- * carrying the plugin's media-ID meta are deleted.
+ * Uninstall: remove the plugin's options, scheduled events, the Instagram
+ * Manager role and the images it imported. Images uploaded by people are
+ * never touched: only attachments carrying the plugin's media-ID meta are
+ * deleted.
  *
  * @package SHD\InstagramFeed
  */
@@ -33,6 +34,10 @@ function shd_igf_uninstall_site() {
 	delete_transient( 'shd_igf_sync_lock' );
 	wp_clear_scheduled_hook( 'shd_igf_sync' );
 	wp_clear_scheduled_hook( 'shd_igf_sync_continue' );
+
+	// Users who had only this role keep their account, without a role on this site.
+	remove_role( 'shd_igf_manager' );
+	delete_metadata( 'user', 0, $wpdb->get_blog_prefix() . 'shd_igf_notify', '', true );
 }
 
 if ( is_multisite() ) {

@@ -104,6 +104,11 @@ final class Sync {
 				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::CONTINUE_HOOK );
 			}
 
+			if ( 0 === $result['pending'] ) {
+				// All images are imported: announce new posts that wait for approval.
+				Notifier::maybe_notify();
+			}
+
 			if ( '' !== $connection['token_error'] ) {
 				$connection['token_error'] = '';
 				Options::save_connection( $connection );
@@ -129,12 +134,12 @@ final class Sync {
 
 	/**
 	 * Turn API posts into the cached feed: reuse imported images, import new
-	 * ones (bounded per run), keep selected older posts, delete images of posts
+	 * ones (bounded per run), keep approved older posts, delete images of posts
 	 * that left the feed.
 	 *
 	 * @param array      $raw      Raw media objects from the API, newest first.
 	 * @param string     $username Account username.
-	 * @param Api_Client $client   API client (to check selected older posts).
+	 * @param Api_Client $client   API client (to check approved older posts).
 	 * @return array{fetched:int,imported:int,pending:int,removed:int,failed:int,error:string}
 	 */
 	private static function apply( array $raw, string $username, Api_Client $client ): array {
@@ -192,7 +197,7 @@ final class Sync {
 			$feed[]                = $item;
 		}
 
-		// Selected posts that are older than the newest posts.
+		// Approved posts that are older than the newest posts.
 		$kept = self::keep_selected( $items, $existing, $client );
 		if ( $kept ) {
 			$feed = array_merge( $feed, $kept );
@@ -204,7 +209,7 @@ final class Sync {
 			);
 		}
 
-		// Images of posts that are no longer among the latest or selected posts.
+		// Images of posts that are no longer among the latest or approved posts.
 		$current = array_merge( wp_list_pluck( $items, 'id' ), wp_list_pluck( $kept, 'id' ) );
 		foreach ( $existing as $media_id => $attachment_id ) {
 			if ( ! in_array( (string) $media_id, $current, true ) ) {
@@ -234,9 +239,9 @@ final class Sync {
 	}
 
 	/**
-	 * When only selected posts are shown, keep selected posts that dropped
-	 * out of the newest posts, as long as they still exist on Instagram
-	 * (checked at most once a day per post).
+	 * When new posts need approval, keep approved posts that dropped out of
+	 * the newest posts, as long as they still exist on Instagram (checked at
+	 * most once a day per post).
 	 *
 	 * @param array      $items    Newest posts from the API (normalised).
 	 * @param array      $existing Media ID => attachment ID.
@@ -281,7 +286,7 @@ final class Sync {
 	}
 
 	/**
-	 * Forget the selection of posts that are no longer in the feed.
+	 * Forget approvals and hidden posts that are no longer in the feed.
 	 *
 	 * @param string[] $current Media IDs in the feed or waiting for their image.
 	 */

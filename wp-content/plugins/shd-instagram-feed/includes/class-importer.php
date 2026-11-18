@@ -110,6 +110,9 @@ final class Importer {
 				'post_title'   => self::title( $item ),
 				'post_content' => '',
 				'post_excerpt' => '',
+				// The images belong to the feed, not to whoever clicked a button:
+				// deleting that user's account never deletes them.
+				'post_author'  => 0,
 			)
 		);
 

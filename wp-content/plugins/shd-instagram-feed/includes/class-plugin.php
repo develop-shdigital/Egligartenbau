@@ -20,6 +20,7 @@ final class Plugin {
 	 * Register hooks. Runs on `plugins_loaded`.
 	 */
 	public static function boot(): void {
+		Access::init();
 		add_action( 'init', array( self::class, 'load_textdomain' ) );
 		add_action( Sync::HOOK, array( Sync::class, 'run_cron' ) );
 		add_action( Sync::CONTINUE_HOOK, array( Sync::class, 'run_cron' ) );
@@ -85,10 +86,12 @@ final class Plugin {
 	}
 
 	/**
-	 * Activation: create options and schedule the sync if already connected.
+	 * Activation: create options and the Instagram Manager role, schedule the
+	 * sync if already connected.
 	 */
 	public static function activate(): void {
 		Options::install();
+		Access::install_role();
 		Sync::schedule();
 	}
 

@@ -67,7 +67,7 @@ New posts from Instagram don't appear on the website by themselves. They wait on
 
 Approved posts stay on the website when they get older, even after they drop out of the newest *Posts to keep*: the plugin keeps their images and checks once a day that they still exist on Instagram. An approved post that was deleted on Instagram disappears automatically.
 
-**Email:** whoever approves posts gets an email when new posts are waiting, with the captions, links to Instagram and a link to the page. One email per new post or group of posts, sent once their images are imported, in the recipient's language (profile language). Instagram managers get it by default, administrators can turn it on: *Settings → Email me when new posts are waiting* (each person decides for themselves). Posts that were already on Instagram when the account was connected are not announced. Emails go out with `wp_mail()`, so the site's normal mail setup (e.g. an SMTP plugin) applies.
+**Email:** whoever approves posts gets an email when new posts are waiting, with the captions, links to Instagram and a link to the page. One email per new post or group of posts, sent once their images are imported, in the recipient's language (profile language). Instagram managers get it by default, administrators can turn it on: *Settings → Email me when new posts are waiting* (each person decides for themselves). Posts that were already on Instagram when the account was connected are not announced. Emails go out with `wp_mail()`, so the site's normal mail setup (e.g. an SMTP plugin) applies. The link in the email goes through the login page, so it also works with a hidden login address (e.g. Solid Security's *Hide Backend*); who is already logged in goes straight to the posts.
 
 *Settings → New posts from Instagram → Show automatically* turns approval off: new posts appear right away and single posts can still be hidden. Switching back to *Wait for approval* keeps everything the website shows at that moment.
 
@@ -107,6 +107,13 @@ To place the arrows exactly where the old Loop Carousel had them, set *Style →
 - **Videos and albums:** videos and reels show their cover image, albums show their first image, each with a small corner icon.
 - **Alt text:** taken from Instagram's alt text when the post has one, otherwise from the caption (without hashtags, mentions and emoji). Editing the alt text in the Media Library keeps your version.
 - **When something breaks** (expired token, Instagram outage), the widget keeps showing the last synced posts and administrators get a notice on the Dashboard and the plugin's settings page.
+- **Page caches:** the slider is part of the page's HTML. Whenever the posts on the website change (a post approved or hidden, an approved post deleted on Instagram, new posts in automatic mode), the plugin clears the page cache of WP Rocket, LiteSpeed Cache, W3 Total Cache, WP Super Cache, WP Fastest Cache, SiteGround Optimizer, Breeze, Cache Enabler, Hummingbird and Nginx Helper, and fires the action `shd_igf_feed_changed` for every other cache. A cache this plugin doesn't know (e.g. SHD Performance on egligartenbau.com) has to clear itself on that action, otherwise approved posts only appear once its cached pages expire:
+
+  ```php
+  add_action( 'shd_igf_feed_changed', 'your_cache_clear_all_function' );
+  ```
+
+  New posts waiting for approval don't change the website, so they don't clear anything.
 
 ## Performance
 
@@ -137,6 +144,8 @@ Filters:
 - `shd_igf_connect_url` – address of the login service.
 - `shd_igf_service_allowed_hosts`, `shd_igf_service_redirect_uri` – login service mode.
 
+Action: `shd_igf_feed_changed` – the posts shown on the website changed; page caches should clear (see *Page caches*).
+
 Constants: `SHD_IGF_CONNECT_URL` (address of the login service); on the login service site `SHD_IGF_APP_ID`, `SHD_IGF_APP_SECRET`, optional `SHD_IGF_ALLOWED_HOSTS`.
 
 Access: the capability `shd_igf_manage` opens the *Instagram* page and its actions. Users with `manage_options` get it automatically (filter on `user_has_cap`, nothing stored); the role `shd_igf_manager` ("Instagram Manager") has `read`, `shd_igf_manage` and `view_admin_dashboard` (lets plugins such as WooCommerce, which keep customers out of wp-admin, let managers in). The role is created on activation and recreated if missing. Users who can manage the feed but can't edit posts land on the page after login, and the Dashboard redirects them there.
@@ -155,6 +164,7 @@ includes/class-plugin.php       Hooks, assets, Elementor registration
 includes/class-access.php       Capability, Instagram Manager role, login redirect
 includes/class-admin.php        Instagram page (approval, settings, connect / sync), Dashboard widget, notices
 includes/class-notifier.php     Email when new posts wait for approval
+includes/class-cache.php        Clear page caches when the posts on the website change
 includes/class-connector.php    Login to Instagram button and callback, connecting a token
 includes/class-connect-service.php  Login service mode (Meta app, code exchange)
 includes/class-api-client.php   Instagram Graph API (Instagram Login)

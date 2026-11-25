@@ -158,7 +158,9 @@ final class Notifier {
 
 		$lines[] = '';
 		$lines[] = _n( 'Approve or hide it here:', 'Approve or hide them here:', $count, 'shd-instagram-feed' );
-		$lines[] = Connector::page_url() . '#shd-igf-review';
+		// Through the login page: it respects a hidden login address (e.g. Solid
+		// Security's "Hide Backend") and goes straight on when already logged in.
+		$lines[] = wp_login_url( Connector::page_url() . '#shd-igf-review' );
 		$lines[] = '';
 		$lines[] = '-- ';
 		$lines[] = sprintf(

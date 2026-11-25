@@ -194,7 +194,9 @@ final class Admin {
 		Sync::unschedule();
 
 		if ( ! empty( $_POST['shd_igf_delete_cache'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce and capability checked in verify_request().
+			$before = Cache::fingerprint();
 			self::delete_cache();
+			Cache::clear_if_changed( $before );
 			self::redirect( 'success', __( 'Disconnected. The cached posts and images were deleted.', 'shd-instagram-feed' ) );
 		}
 
@@ -225,6 +227,7 @@ final class Admin {
 		// phpcs:enable
 
 		$in_feed = Options::feed_ids();
+		$before  = Cache::fingerprint();
 
 		if ( $all ) {
 			// Only posts the user saw: a post that arrived meanwhile keeps waiting.
@@ -239,6 +242,7 @@ final class Admin {
 
 		if ( $all || '' !== $approve ) {
 			Options::set_visibility( $ids );
+			Cache::clear_if_changed( $before );
 			self::redirect(
 				'success',
 				1 === count( $ids )
@@ -252,6 +256,7 @@ final class Admin {
 		}
 
 		Options::set_visibility( array(), $ids );
+		Cache::clear_if_changed( $before );
 		self::redirect( 'success', __( 'Done. The post is not shown on the website. You can still show it under “Posts on the website”.', 'shd-instagram-feed' ) );
 	}
 
@@ -270,7 +275,9 @@ final class Admin {
 		$listed = array_values( array_intersect( Options::feed_ids(), $listed ) );
 		$ticked = array_values( array_intersect( $listed, $ticked ) );
 
+		$before = Cache::fingerprint();
 		Options::set_visibility( $ticked, array_diff( $listed, $ticked ) );
+		Cache::clear_if_changed( $before );
 
 		$counts = Feed::counts();
 		self::redirect(
@@ -302,7 +309,9 @@ final class Admin {
 		);
 		// phpcs:enable
 
+		$before = Cache::fingerprint();
 		Options::set_approval_required( $approval );
+		Cache::clear_if_changed( $before );
 		Notifier::set_wants_email( get_current_user_id(), $notify );
 		update_option( Options::SETTINGS, $settings, false );
 		Sync::schedule();

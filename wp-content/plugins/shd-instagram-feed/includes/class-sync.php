@@ -98,7 +98,9 @@ final class Sync {
 				return $raw;
 			}
 
+			$before = Cache::fingerprint();
 			$result = self::apply( $raw, $connection['username'], $client );
+			Cache::clear_if_changed( $before );
 
 			if ( $result['pending'] > 0 && ! wp_next_scheduled( self::CONTINUE_HOOK ) ) {
 				wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::CONTINUE_HOOK );

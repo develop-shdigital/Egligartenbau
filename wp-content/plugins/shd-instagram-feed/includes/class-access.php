@@ -34,6 +34,30 @@ final class Access {
 	public static function init(): void {
 		add_filter( 'user_has_cap', array( self::class, 'grant_to_administrators' ) );
 		add_filter( 'login_redirect', array( self::class, 'login_redirect' ), 10, 3 );
+		add_action( 'login_init', array( self::class, 'skip_login_form' ) );
+	}
+
+	/**
+	 * The link in the notification email goes through the login page, so it
+	 * also works when the login address is hidden (e.g. Solid Security's
+	 * "Hide Backend") and the manager isn't logged in. Who is logged in goes
+	 * straight on instead of seeing the login form again. Only for links to
+	 * the Instagram page.
+	 */
+	public static function skip_login_form(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- only forwards a logged-in user to the Instagram page.
+		$action   = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : 'login';
+		$redirect = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
+		$special  = isset( $_GET['reauth'] ) || isset( $_GET['interim-login'] );
+		// phpcs:enable
+
+		if ( 'login' !== $action || $special || 0 !== strpos( $redirect, Connector::page_url() ) ) {
+			return;
+		}
+		if ( is_user_logged_in() && current_user_can( self::CAP ) ) {
+			wp_safe_redirect( $redirect );
+			exit;
+		}
 	}
 
 	/**

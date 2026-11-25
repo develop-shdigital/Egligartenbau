@@ -80,6 +80,45 @@ final class Connector {
 	}
 
 	/**
+	 * Ask the login service whether it is set up before sending the browser
+	 * there, so a missing setup shows a clear message on this site instead of
+	 * an error page on the service's website. Only WordPress's own "no such
+	 * route" answer blocks the login: network errors, firewalls or bot
+	 * protection between the two servers say nothing about what the
+	 * visitor's browser will get.
+	 *
+	 * @return string Problem description, empty when the login can go ahead.
+	 */
+	public static function service_problem(): string {
+		$connect = self::connect_url();
+		if ( '' === $connect ) {
+			return '';
+		}
+
+		$response = wp_safe_remote_get(
+			add_query_arg( 'health', '1', $connect ),
+			array(
+				'timeout'     => 10,
+				'redirection' => 2,
+			)
+		);
+		if ( is_wp_error( $response ) || 404 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return '';
+		}
+
+		$data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $data ) || 'rest_no_route' !== ( $data['code'] ?? '' ) ) {
+			return '';
+		}
+
+		return sprintf(
+			/* translators: %s: host name of the login service, e.g. www.sh-digital.ch. */
+			__( 'The Instagram login is not available yet: the login service on %s is not set up. This plugin must be active there, with the Instagram app ID and secret in its wp-config.php. Until then you can connect with an access token under “Advanced”.', 'shd-instagram-feed' ),
+			(string) wp_parse_url( $connect, PHP_URL_HOST )
+		);
+	}
+
+	/**
 	 * Where the login service sends the token back to.
 	 *
 	 * @return string

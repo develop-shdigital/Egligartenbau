@@ -139,6 +139,11 @@ final class Admin {
 	public static function handle_oauth_start(): void {
 		self::verify_request( 'shd_igf_oauth_start' );
 
+		$problem = Connector::service_problem();
+		if ( '' !== $problem ) {
+			self::redirect( 'error', $problem );
+		}
+
 		$reconnect = ! empty( $_POST['shd_igf_reconnect'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce and capability checked in verify_request().
 		$url       = Connector::login_url( get_current_user_id(), $reconnect );
 
@@ -478,6 +483,8 @@ final class Admin {
 				.shd-igf-admin__posts input:focus-visible ~ img { outline: 2px solid #1d2327; outline-offset: 4px; }
 				.shd-igf-admin__post-meta { display: block; margin-top: 6px; font-size: 12px; line-height: 1.4; color: #50575e; }
 				.shd-igf-admin__review .shd-igf-admin__post-meta { margin: 0; }
+				.shd-igf-admin pre { margin: 8px 0; }
+				.shd-igf-admin pre code { display: block; padding: 8px 10px; white-space: pre; overflow-x: auto; }
 				.shd-igf-admin__people { margin: 1em 0; }
 				.shd-igf-admin__people li { margin-bottom: 4px; }
 			</style>
@@ -734,7 +741,13 @@ final class Admin {
 	 * Card on the website that provides the login for other sites.
 	 */
 	private static function render_service_card(): void {
-		if ( ! Connect_Service::is_enabled() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( ! Connect_Service::is_enabled() ) {
+			if ( Connect_Service::is_service_host() ) {
+				self::render_service_setup_card();
+			}
 			return;
 		}
 
@@ -752,6 +765,35 @@ final class Admin {
 				<dt><?php esc_html_e( 'Allowed websites', 'shd-instagram-feed' ); ?></dt>
 				<dd><?php echo esc_html( $hosts ? implode( ', ', $hosts ) : __( 'All websites that use the plugin (https)', 'shd-instagram-feed' ) ); ?></dd>
 			</dl>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Card on the website the "Login to Instagram" button points to, while
+	 * the login service is not switched on.
+	 */
+	private static function render_service_setup_card(): void {
+		$health = add_query_arg( 'health', '1', Connect_Service::redirect_uri() );
+		?>
+		<div class="card" id="shd-igf-service-setup">
+			<h2><?php esc_html_e( 'Instagram login service: not set up yet', 'shd-instagram-feed' ); ?></h2>
+			<p><?php esc_html_e( 'The “Login to Instagram” button of every website that uses this plugin leads to this website. Until the login service is switched on here, the button shows an error on those websites. To switch it on:', 'shd-instagram-feed' ); ?></p>
+			<ol>
+				<li>
+					<?php esc_html_e( 'Add the Instagram app ID and secret of the Meta app to wp-config.php, above the line “That’s all, stop editing!”. They are in the Meta app under Instagram → “API setup with Instagram business login” → “Business login settings”.', 'shd-instagram-feed' ); ?>
+					<pre><code>define( 'SHD_IGF_APP_ID', '…' );
+define( 'SHD_IGF_APP_SECRET', '…' );</code></pre>
+				</li>
+				<li>
+					<?php esc_html_e( 'Enter exactly this address in the same Meta settings under “OAuth redirect URIs”:', 'shd-instagram-feed' ); ?>
+					<br><code><?php echo esc_html( Connect_Service::redirect_uri() ); ?></code>
+				</li>
+				<li>
+					<?php esc_html_e( 'Check that this address shows {"ok":true,…}:', 'shd-instagram-feed' ); ?>
+					<br><a href="<?php echo esc_url( $health ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $health ); ?></a>
+				</li>
+			</ol>
 		</div>
 		<?php
 	}

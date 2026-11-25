@@ -68,6 +68,22 @@ final class Connect_Service {
 	}
 
 	/**
+	 * Whether the "Login to Instagram" button of all sites points to this
+	 * site (www.sh-digital.ch by default), i.e. this site should run the
+	 * login service.
+	 *
+	 * @return bool
+	 */
+	public static function is_service_host(): bool {
+		$normalize = static function ( string $url ): string {
+			return preg_replace( '/^www\./', '', strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) ) );
+		};
+		$service   = $normalize( Connector::connect_url() );
+
+		return '' !== $service && $normalize( home_url() ) === $service;
+	}
+
+	/**
 	 * The address to register as OAuth redirect URI in the Meta app.
 	 *
 	 * @return string

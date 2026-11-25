@@ -31,7 +31,7 @@ Like Smash Balloon, the button logs in through one Meta app that belongs to SH D
 ### Set up the login service (once, on www.sh-digital.ch)
 
 1. **Meta app:** on [developers.facebook.com/apps](https://developers.facebook.com/apps) create an app of the type **Business** with the Instagram use case ("Manage messaging & content on Instagram"). Clients never see it.
-2. **Plugin:** install this plugin on www.sh-digital.ch (Elementor is required anyway; a feed there is optional).
+2. **Plugin:** install this plugin on www.sh-digital.ch and activate it (Elementor is required anyway; a feed there is optional). Until step 3 is done, its *Instagram* page shows the card *Instagram login service: not set up yet* with the remaining steps.
 3. **wp-config.php** of www.sh-digital.ch, with the values from the app (*Instagram → API setup with Instagram business login → Set up Instagram business login → Business login settings*):
 
    ```php
@@ -52,6 +52,7 @@ To run the login service on another site, define the constants there and point c
 
 ### If the login doesn't work
 
+- **The browser shows `{"code":"rest_no_route",…}` from www.sh-digital.ch, or the Instagram page says "the login service on www.sh-digital.ch is not set up":** the login service isn't running. The plugin must be active on www.sh-digital.ch, with `SHD_IGF_APP_ID` and `SHD_IGF_APP_SECRET` in its wp-config.php (see above). `https://www.sh-digital.ch/wp-json/shd-igf/v1/connect/?health=1` must show `{"ok":true,…}`. Since 0.6.1 the button checks this before it leaves the site and shows the message instead of the error page. Until the service runs, an administrator can connect with *Advanced: connect with an access token*.
 - **A page from www.sh-digital.ch says the link is not valid:** start again from *Instagram* in the WordPress menu. If it keeps happening, the site is not on https or not in `SHD_IGF_ALLOWED_HOSTS` of the login service.
 - **Instagram says the app has no access (e.g. "Insufficient developer role"):** the Meta app is still in development mode. Add the account to the app or finish Meta's App Review (see above).
 - **You end up on an error page from `/wp-json/`:** a security plugin blocks the REST API for logged-out visitors. Allow the route `shd-igf/v1/oauth`. It only accepts a login that an administrator or Instagram manager of this site started in the last 15 minutes.
